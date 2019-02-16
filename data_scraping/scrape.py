@@ -88,7 +88,7 @@ root = 'https://www.youtube.com/watch?v='
 
 start_pos = 0
 urls = pd.read_csv('data/links.csv', header=None)[0].apply(lambda x: x.replace("'", '') )
-urls = urls.tolist()[start_pos]
+urls = urls.tolist()[start_pos:]
 
 outdir = 'data/'
 XDIR = 'data/144px/'

@@ -1,6 +1,4 @@
-# Super Resolution GAN TreeHacks 2019
-
-### Description
+# SRGAN-treehacks
 
 ### Timeline
 

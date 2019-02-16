@@ -68,8 +68,8 @@ def train():
 
     ###========================== DEFINE MODEL ============================###
     ## train inference
-    t_image = tf.placeholder('float32', [batch_size, 240, 426, 3], name='t_image_input_to_SRGAN_generator')
-    t_target_image = tf.placeholder('float32', [batch_size, 480, 852, 3], name='t_target_image')
+    t_image = tf.placeholder('float32', [None, 240, 426, 3], name='t_image_input_to_SRGAN_generator')
+    t_target_image = tf.placeholder('float32', [None, 480, 852, 3], name='t_target_image')
 
     net_g = SRGAN_g(t_image, is_train=True, reuse=False)
     net_d, logits_real = SRGAN_d(t_target_image, is_train=True, reuse=False)
@@ -177,6 +177,8 @@ def train():
                 xtrain.append(load_img(config.TRAIN.lr_img_path+fp, size=(240, 426)))
                 ytrain.append(load_img(config.TRAIN.hr_img_path+fp, size=(480, 852)))
 
+            xtrain = np.squeeze(xtrain)
+            ytrain = np.squeeze(ytrain)
             step_time = time.time()
            
             ## update D

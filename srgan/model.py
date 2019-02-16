@@ -28,7 +28,11 @@ def SRGAN_g(t_image, is_train=False, reuse=False):
         temp = n
 
         # B residual blocks
+<<<<<<< HEAD
         for i in range(3):
+=======
+        for i in range(1):
+>>>>>>> f21d7e841a80d69ea1d1bce91045c85baa395cb9
             nn = Conv2d(n, 64, (3, 3), (1, 1), act=None, padding='SAME', W_init=w_init, b_init=b_init, name='n64s1/c1/%s' % i)
             nn = BatchNormLayer(nn, act=tf.nn.relu, is_train=is_train, gamma_init=g_init, name='n64s1/b1/%s' % i)
             nn = Conv2d(nn, 64, (3, 3), (1, 1), act=None, padding='SAME', W_init=w_init, b_init=b_init, name='n64s1/c2/%s' % i)

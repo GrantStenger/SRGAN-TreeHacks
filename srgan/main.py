@@ -37,7 +37,7 @@ def chunks(l, n):
 ###====================== HYPER-PARAMETERS ===========================###
 ## Adam
 batch_size = config.TRAIN.batch_size
-N_BATCHES = 500
+BATCH_SIZE = 4
 lr_init = config.TRAIN.lr_init
 beta1 = config.TRAIN.beta1
 ## initialize G
@@ -145,10 +145,45 @@ def train():
     ## fixed learning rate
     sess.run(tf.assign(lr_v, lr_init))
     print(" ** fixed learning rate: %f (for init G)" % lr_init)
-    for epoch in range(0, n_epoch_init + 1):
+    for epoch in range(0, 0):
         epoch_time = time.time()
         total_mse_loss, n_iter = 0, 0
 
+        random.shuffle(train_hr_img_list)
+        batches = chunks(train_hr_img_list, BATCH_SIZE)
+
+        for batch in batches:
+            xtrain = [] 
+            ytrain = []
+            for fp in batch:
+                xtrain.append(load_img(config.TRAIN.lr_img_path+fp, size=(240, 426)))
+                ytrain.append(load_img(config.TRAIN.hr_img_path+fp, size=(480, 852)))
+
+            step_time = time.time()
+
+            xtrain = np.squeeze(xtrain)
+            ytrain = np.squeeze(ytrain)
+
+            xtrain = np.transpose(xtrain, (0, 2, 1, 3))
+            ytrain = np.transpose(ytrain, (0, 2, 1, 3))
+
+            errM, _ = sess.run([mse_loss, g_optim_init], {t_image: xtrain, t_target_image: ytrain})
+            print("Epoch [%2d/%2d] %4d time: %4.4fs, mse: %.8f " % (epoch, n_epoch_init, n_iter, time.time() - step_time, errM))
+            total_mse_loss += errM
+            n_iter += 1
+
+        log = "[*] Epoch: [%2d/%2d] time: %4.4fs, mse: %.8f" % (epoch, n_epoch_init, time.time() - epoch_time, total_mse_loss / n_iter)
+        print(log)
+#
+#        ## quick evaluation on train set
+#        if (epoch != 0) and (epoch % 10 == 0):
+#            out = sess.run(net_g_test.outputs, {t_image: sample_imgs_96})  #; print('gen sub-image:', out.shape, out.min(), out.max())
+#            print("[*] save images")
+#            tl.vis.save_images(out, [ni, ni], save_dir_ginit + '/train_%d.png' % epoch)
+
+        ## save model
+        if (epoch != 0) and (epoch % 10 == 0):
+            tl.files.save_npz(net_g.all_params, name=checkpoint_dir + '/g_{}_init.npz'.format(tl.global_flag['mode']), sess=sess)
 
     ###========================= train GAN (SRGAN) =========================###
     for epoch in range(0, n_epoch + 1):
@@ -167,19 +202,22 @@ def train():
         total_d_loss, total_g_loss, n_iter = 0, 0, 0
 
         random.shuffle(train_hr_img_list)
-        batches = chunks(train_hr_img_list, N_BATCHES)
+        batches = chunks(train_hr_img_list, BATCH_SIZE)
 
         for batch in batches:
-            
             xtrain = [] 
             ytrain = []
             for fp in batch:
                 xtrain.append(load_img(config.TRAIN.lr_img_path+fp, size=(240, 426)))
                 ytrain.append(load_img(config.TRAIN.hr_img_path+fp, size=(480, 852)))
 
+            step_time = time.time()
+
             xtrain = np.squeeze(xtrain)
             ytrain = np.squeeze(ytrain)
-            step_time = time.time()
+
+            xtrain = np.transpose(xtrain, (0, 2, 1, 3))
+            ytrain = np.transpose(ytrain, (0, 2, 1, 3))
            
             ## update D
             errD, _ = sess.run([d_loss, d_optim], {t_image: xtrain, t_target_image: ytrain})
@@ -277,7 +315,7 @@ if __name__ == '__main__':
 
     if tl.global_flag['mode'] == 'srgan':
         train()
-    #elif tl.global_flag['mode'] == 'evaluate':
-    #    evaluate()
+    elif tl.global_flag['mode'] == 'evaluate':
+        evaluate()
     else:
         raise Exception("Unknown --mode")

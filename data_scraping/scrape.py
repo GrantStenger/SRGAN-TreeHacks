@@ -13,10 +13,13 @@ from pytube import YouTube
 parser = argparse.ArgumentParser()
 parser.add_argument('--outdir', default='data/',
                     help='output dir to place images')
+parser.add_argument('--start_pos', default=0, type=int,
+                    help='start position')
 args = parser.parse_args()
 
 
 outdir = args.outdir 
+start_pos = args.start_pos
 
 
 
@@ -93,7 +96,6 @@ def run_func_with_timeout(func, args, timeout=5):
 
 root = 'https://www.youtube.com/watch?v='
 
-start_pos = 132
 urls = pd.read_csv('data/links.csv', header=None)[0].apply(lambda x: x.replace("'", '') )
 urls = urls.tolist()[start_pos:]
 
@@ -107,7 +109,7 @@ os.makedirs(XDIR, exist_ok=True)
 os.makedirs(YDIR, exist_ok=True)
 
 img_count = len(os.listdir(XDIR))
-N_FRAMES_ITER = 8
+N_FRAMES_ITER = 11
 
 
 for nvids, url in enumerate(urls):

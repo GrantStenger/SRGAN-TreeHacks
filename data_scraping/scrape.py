@@ -113,6 +113,7 @@ os.makedirs('data/', exist_ok=True)
 os.makedirs(XDIR, exist_ok=True)
 os.makedirs(YDIR, exist_ok=True)
 os.makedirs(Y2DIR, exist_ok=True)
+os.makedirs(Y3DIR, exist_ok=True)
 
 img_count = len(os.listdir(XDIR))
 N_FRAMES_ITER = 11
@@ -194,8 +195,8 @@ for nvids, url in enumerate(urls):
         for i in range(len(imgs144)):
             cv2.imwrite(XDIR+str(img_count)+'.png', imgs144[i])
             cv2.imwrite(YDIR+str(img_count)+'.png', imgs240[i])
-            cv2.imwrite(XDIR+str(img_count)+'.png', imgs360[i])
-            cv2.imwrite(YDIR+str(img_count)+'.png', imgs480[i])
+            cv2.imwrite(Y2DIR+str(img_count)+'.png', imgs360[i])
+            cv2.imwrite(Y3DIR+str(img_count)+'.png', imgs480[i])
             
             img_count+=1
         

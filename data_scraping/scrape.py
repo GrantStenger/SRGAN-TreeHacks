@@ -104,12 +104,15 @@ urls = urls.tolist()[start_pos:]
 
 XDIR = outdir+'144px/'
 YDIR = outdir+'240px/'
+Y2DIR = outdir+'360px/'
+Y3DIR = outdir+'480px/'
 
 # Make sure dirs exist
 os.makedirs(outdir, exist_ok=True)
 os.makedirs('data/', exist_ok=True)
 os.makedirs(XDIR, exist_ok=True)
 os.makedirs(YDIR, exist_ok=True)
+os.makedirs(Y2DIR, exist_ok=True)
 
 img_count = len(os.listdir(XDIR))
 N_FRAMES_ITER = 11
@@ -152,17 +155,47 @@ for nvids, url in enumerate(urls):
         if not success:
             continue 
         
+        
         # Ditto for 240p
         cap = cv2.VideoCapture(outfile)
         imgs240, sucess = get_frames(cap, pos)
         del cap
         if not success:
             continue
+
+        
+
+        # Download 360p video
+        success = run_func_with_timeout(download_video, (yt, '360p', outdir, name), timeout=timeout )
+        if not success:
+            continue 
+
+        # Ditto for 360p
+        cap = cv2.VideoCapture(outfile)
+        imgs360, sucess = get_frames(cap, pos)
+        del cap
+        if not success:
+            continue
+
+        # Download 480p video
+        success = run_func_with_timeout(download_video, (yt, '480p', outdir, name), timeout=timeout )
+        if not success:
+            continue 
+
+        # Ditto for 480p
+        cap = cv2.VideoCapture(outfile)
+        imgs480, sucess = get_frames(cap, pos)
+        del cap
+        if not success:
+            continue
+
         
         # Save images
         for i in range(len(imgs144)):
             cv2.imwrite(XDIR+str(img_count)+'.png', imgs144[i])
             cv2.imwrite(YDIR+str(img_count)+'.png', imgs240[i])
+            cv2.imwrite(XDIR+str(img_count)+'.png', imgs360[i])
+            cv2.imwrite(YDIR+str(img_count)+'.png', imgs480[i])
             
             img_count+=1
         

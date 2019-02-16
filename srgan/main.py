@@ -34,10 +34,11 @@ def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
+
 ###====================== HYPER-PARAMETERS ===========================###
 ## Adam
 batch_size = config.TRAIN.batch_size
-BATCH_SIZE = 4
+BATCH_SIZE = 8 
 lr_init = config.TRAIN.lr_init
 beta1 = config.TRAIN.beta1
 ## initialize G
@@ -115,7 +116,8 @@ def train():
     d_optim = tf.train.AdamOptimizer(lr_v, beta1=beta1).minimize(d_loss, var_list=d_vars)
 
     ###========================== RESTORE MODEL =============================###
-    sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
+    sess_config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
+    sess = tf.Session(config=sess_config)
     tl.layers.initialize_global_variables(sess)
     if tl.files.load_and_assign_npz(sess=sess, name=checkpoint_dir + '/g_{}.npz'.format(tl.global_flag['mode']), network=net_g) is False:
         tl.files.load_and_assign_npz(sess=sess, name=checkpoint_dir + '/g_{}_init.npz'.format(tl.global_flag['mode']), network=net_g)
@@ -145,7 +147,7 @@ def train():
     ## fixed learning rate
     sess.run(tf.assign(lr_v, lr_init))
     print(" ** fixed learning rate: %f (for init G)" % lr_init)
-    for epoch in range(0, 0):
+    for epoch in range(0, n_epoch_init):
         epoch_time = time.time()
         total_mse_loss, n_iter = 0, 0
 
@@ -174,12 +176,12 @@ def train():
 
         log = "[*] Epoch: [%2d/%2d] time: %4.4fs, mse: %.8f" % (epoch, n_epoch_init, time.time() - epoch_time, total_mse_loss / n_iter)
         print(log)
-#
+
 #        ## quick evaluation on train set
 #        if (epoch != 0) and (epoch % 10 == 0):
-#            out = sess.run(net_g_test.outputs, {t_image: sample_imgs_96})  #; print('gen sub-image:', out.shape, out.min(), out.max())
+#            out = sess.run(net_g_test.outputs, {t_image: xtrain})  #; print('gen sub-image:', out.shape, out.min(), out.max())
 #            print("[*] save images")
-#            tl.vis.save_images(out, [ni, ni], save_dir_ginit + '/train_%d.png' % epoch)
+#            tl.vis.save_images(out, [ni, ni], save_dir_gan + '/train_%d.png' % epoch)
 
         ## save model
         if (epoch != 0) and (epoch % 10 == 0):
@@ -233,11 +235,11 @@ def train():
                                                                                 total_g_loss / n_iter)
         print(log)
 
-        ## quick evaluation on train set
-        if (epoch != 0) and (epoch % 10 == 0):
-            out = sess.run(net_g_test.outputs, {t_image: xtrain})  #; print('gen sub-image:', out.shape, out.min(), out.max())
-            print("[*] save images")
-            tl.vis.save_images(out, [ni, ni], save_dir_gan + '/train_%d.png' % epoch)
+#        ## quick evaluation on train set
+#        if (epoch != 0) and (epoch % 10 == 0):
+#            out = sess.run(net_g_test.outputs, {t_image: xtrain})  #; print('gen sub-image:', out.shape, out.min(), out.max())
+#            print("[*] save images")
+#            tl.vis.save_images(out, [ni, ni], save_dir_gan + '/train_%d.png' % epoch)
 
         ## save model
         if (epoch != 0) and (epoch % 10 == 0):
@@ -284,7 +286,8 @@ def evaluate():
     net_g = SRGAN_g(t_image, is_train=False, reuse=False)
 
     ###========================== RESTORE G =============================###
-    sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, log_device_placement=False))
+    sess_config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=False)
+    sess = tf.Session(config=sess_config)
     tl.layers.initialize_global_variables(sess)
     tl.files.load_and_assign_npz(sess=sess, name=checkpoint_dir + '/g_srgan.npz', network=net_g)
 

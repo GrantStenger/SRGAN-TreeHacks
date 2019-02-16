@@ -141,7 +141,6 @@ def train():
     # net_vgg.print_layers()
 
     ###============================= TRAINING ===============================###
-    ## use first `batch_size` of train set to have a quick test during training
 
     ###========================= initialize G ====================###
     ## fixed learning rate
@@ -177,11 +176,13 @@ def train():
         log = "[*] Epoch: [%2d/%2d] time: %4.4fs, mse: %.8f" % (epoch, n_epoch_init, time.time() - epoch_time, total_mse_loss / n_iter)
         print(log)
 
-#        ## quick evaluation on train set
-#        if (epoch != 0) and (epoch % 10 == 0):
-#            out = sess.run(net_g_test.outputs, {t_image: xtrain})  #; print('gen sub-image:', out.shape, out.min(), out.max())
-#            print("[*] save images")
-#            tl.vis.save_images(out, [ni, ni], save_dir_gan + '/train_%d.png' % epoch)
+        ## quick evaluation on train set
+        if (epoch != 0) and (epoch % 10 == 0):
+            out = sess.run(net_g_test.outputs, {t_image: xtrain})  #; print('gen sub-image:', out.shape, out.min(), out.max())
+            print("[*] save images")
+            for i in range(len(out)):
+                cv2.imwrite( save_dir_ginit + '/mse_epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i])
+                cv2.imwrite( save_dir_ginit + '/mse_epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])
 
         ## save model
         if (epoch != 0) and (epoch % 10 == 0):
@@ -235,14 +236,6 @@ def train():
                                                                                 total_g_loss / n_iter)
         print(log)
 
-<<<<<<< HEAD
-#        ## quick evaluation on train set
-#        if (epoch != 0) and (epoch % 10 == 0):
-#            out = sess.run(net_g_test.outputs, {t_image: xtrain})  #; print('gen sub-image:', out.shape, out.min(), out.max())
-#            print("[*] save images")
-#            tl.vis.save_images(out, [ni, ni], save_dir_gan + '/train_%d.png' % epoch)
-
-=======
         ## quick evaluation on train set
         if (epoch != 0) and (epoch % 10 == 0):
             out = sess.run(net_g_test.outputs, {t_image: xtrain})  #; print('gen sub-image:', out.shape, out.min(), out.max())
@@ -251,7 +244,6 @@ def train():
                 cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i])
                 cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])
             
->>>>>>> f21d7e841a80d69ea1d1bce91045c85baa395cb9
         ## save model
         if (epoch != 0) and (epoch % 10 == 0):
             tl.files.save_npz(net_g.all_params, name=checkpoint_dir + '/g_{}.npz'.format(tl.global_flag['mode']), sess=sess)

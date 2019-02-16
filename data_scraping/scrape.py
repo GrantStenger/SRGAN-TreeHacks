@@ -102,11 +102,12 @@ urls = pd.read_csv('data/links.csv', header=None)[0].apply(lambda x: x.replace("
 urls = urls.tolist()[start_pos:]
 
 
-XDIR = 'data/144px/'
-YDIR = 'data/240px/'
+XDIR = outdir+'144px/'
+YDIR = outdir+'240px/'
 
 # Make sure dirs exist
 os.makedirs(outdir, exist_ok=True)
+os.makedirs('data/', exist_ok=True)
 os.makedirs(XDIR, exist_ok=True)
 os.makedirs(YDIR, exist_ok=True)
 
@@ -127,7 +128,7 @@ for nvids, url in enumerate(urls):
 
         # Download video for 144 px
         name = 'temp'
-        outfile = outdir+name+'.mp4'
+        outfile = 'data/'+name+'.mp4'
         
         success = run_func_with_timeout(download_video, (yt, '144p', outdir, name), timeout=timeout)
         if not success:

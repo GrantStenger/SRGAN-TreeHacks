@@ -15,12 +15,14 @@ parser.add_argument('--outdir', default='data/',
                     help='output dir to place images')
 parser.add_argument('--start_pos', default=0, type=int,
                     help='start position')
+parser.add_argument('--timeout', default=7, type=int,
+                    help='max time to load')
 args = parser.parse_args()
 
 
 outdir = args.outdir 
 start_pos = args.start_pos
-
+timeout = args.timeout
 
 
 def download_video(yt, res, outdir, name='vid'):
@@ -127,7 +129,7 @@ for nvids, url in enumerate(urls):
         name = 'temp'
         outfile = outdir+name+'.mp4'
         
-        success = run_func_with_timeout(download_video, (yt, '144p', outdir, name))
+        success = run_func_with_timeout(download_video, (yt, '144p', outdir, name), timeout=timeout)
         if not success:
             continue 
 
@@ -145,7 +147,7 @@ for nvids, url in enumerate(urls):
             continue
         
         # Download 240p video
-        success = run_func_with_timeout(download_video, (yt, '240p', outdir, name) )
+        success = run_func_with_timeout(download_video, (yt, '240p', outdir, name), timeout=timeout )
         if not success:
             continue 
         

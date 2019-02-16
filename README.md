@@ -1,4 +1,6 @@
-# SRGAN-treehacks
+# Super Resolution GAN TreeHacks 2019
+
+### Description
 
 ### Timeline
 
@@ -27,6 +29,6 @@ Network](https://arxiv.org/pdf/1609.04802.pdf)
 - [Are GANs Created Equal? A Large-Scale Study](https://arxiv.org/pdf/1711.10337.pdf)
   - A study of GAN evaluation metrics
   - We provide a fair and comprehensive comparison of the state-of-the-art GANs, and empirically demonstrate that nearly all of them can reach similar values of FID, given a high enough computational budget.
-
+  - We provide strong empirical evidence that to compare GANs it is necessary to report a summary of distribution of results, rather than the best result achieved, due to the randomness of the optimization process and model instability.
 
 sparab22@stanford.edu

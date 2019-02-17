@@ -1,5 +1,6 @@
 # Import Dependencies
 import argparse, os
+import keras
 from keras.models import load_model, Sequential, Model
 from keras.layers import Conv2D, Dense, MaxPooling2D, Input
 import keras.backend as K
@@ -87,15 +88,12 @@ def main():
             Xtrain = np.transpose(Xtrain, (0, 2, 1, 3))
             ytrain = np.transpose(ytrain, (0, 2, 1, 3))
 
-           
-
             if train_gen:
                 print("Training generator")
                 make_trainable(discriminator, False)
 
                 metrics = model.fit( Xtrain, [ np.ones([len(Xtrain)]), ytrain] )
-            
-                if metrics.history['acc'][0] > .8:
+                if metrics.history['discriminator_acc'][0] > .8:
                     train_gen = False
             else:
                 print("Training discriminator")

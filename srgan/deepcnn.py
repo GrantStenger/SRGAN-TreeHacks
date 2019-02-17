@@ -9,7 +9,7 @@ import logging, scipy
 
 import tensorflow as tf
 import tensorlayer as tl
-from model import SRGAN_g, SRGAN_d, Vgg19_simple_api
+
 from utils import *
 from config import config, log_config
 from keras.preprocessing import image
@@ -62,15 +62,16 @@ if model_path is None:
     def to_float(x):
         return K.cast(x, "float32" )
 
-    model.add(Lambda(to_float, input_shape=(240,426,3)))
+    model.add(Lambda(to_float, input_shape=(144,256,3)))
 
     model.add(Conv2D(20, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
+    model.add(Dropout(.15))
     model.add(LeakyReLU())
 
-    model.add(UpSampling2D())
+    model.add(UpSampling2D(3))
 
     
-    model.add(Conv2D(3, (2,2), strides=(1,1),  activation='relu', padding='SAME' ))
+    model.add(Conv2D(3, (1,1), strides=(1,1),  activation='relu', padding='SAME' ))
     
     # Resize to fit output shape
     model.add( Lambda( lambda image: tf.image.resize_images( 
@@ -80,6 +81,7 @@ if model_path is None:
         ) ) )
 
 else:
+
     model = load_model(model_path,
                        custom_objects={'root_mean_squared_error':root_mean_squared_error})
     

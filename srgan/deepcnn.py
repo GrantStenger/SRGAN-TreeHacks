@@ -41,6 +41,7 @@ def chunks(l, n):
         yield l[i:i + n]
 
 
+
 model = Sequential()
 
 def to_float(x):
@@ -61,6 +62,12 @@ model.add(LeakyReLU())
 model.add(Conv2D(20, (2,2), strides=(1,1),  activation=None, padding='SAME' ))
 model.add(LeakyReLU())
 model.add(Conv2D(3, (1,1), strides=(1,1),  activation='relu', padding='SAME' ))
+
+
+def root_mean_squared_error(y_true, y_pred):
+    return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
+
+model.compile(optimizer=Adam(), loss=root_mean_squared_error, metrics=['accuracy'])
 
 
 

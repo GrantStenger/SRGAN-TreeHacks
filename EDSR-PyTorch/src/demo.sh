@@ -29,7 +29,7 @@
 #python main.py --data_test Set5+Set14+B100+Urban100+DIV2K --data_range 801-900 --scale 4 --n_resblocks 32 --n_feats 256 --res_scale 0.1 --pre_train download --test_only --self_ensemble
 
 # Test your own images
-python main.py --data_test Demo --scale 3 --pre_train download --test_only --save_results
+python main.py --data_test Demo --scale 4 --pre_train download --test_only --save_results
 
 # Advanced - Test with JPEG images
 #python main.py --model MDSR --data_test Demo --scale 2+3+4 --pre_train download --test_only --save_results

@@ -1,8 +1,8 @@
 import os
-import numpy as np 
+import numpy as np
 
-load_gan = os.listdir 
-load_discriminator = os.listdir 
+load_gan = os.listdir
+load_discriminator = os.listdir
 
 
 img_loader = None
@@ -42,38 +42,9 @@ for epoch in range(EPOCHS):
     batches = chunks(files, N_BATCHES)
 
     for batch in batches:
-        
-        xtrain = [] 
+
+        xtrain = []
         ytrain = []
         for fp in batch:
             xtrain.append(load_img(XTRAINDIR+fp))
             ytrain.append(load_img(YTRAINDIR+fp))
-
-
-
-        
-
-
-
-
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

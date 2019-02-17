@@ -41,12 +41,13 @@
 sparab22@stanford.edu
 
 
-
-Spatiotemporal 3D CNN
-
-W * H * C * T
-
-W: Width
-H: Height
-C: Channels
-T: Time Window
+Quick Notes
+- Spatiotemporal 3D CNN
+  - W * H * C * T
+  - W: Width
+  - H: Height
+  - C: Channels
+  - T: Time Window
+- SRGAN
+  - deep residual network (ResNet) with skip-connection
+  - perceptual loss using high-level feature maps of the VGG network combined with a discriminator that encourages solutions perceptually hard to distinguish from the HR reference images

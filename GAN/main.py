@@ -36,7 +36,6 @@ def make_trainable(net, val):
     for l in net.layers:
         l.trainable = val
 
-
 def evaluate(model=None, target=None):
     if model is None:
         model = FLAGS.gen_path
@@ -77,7 +76,7 @@ def train():
 
     model = Model(inputs=input_layer, outputs=[out_disc, out_gen])
     model.compile(optimizer='adam', loss=['binary_crossentropy', root_mean_squared_error],  
-                  metrics=['accuracy'], loss_weights=[.9, .1])
+                  metrics=['accuracy'], loss_weights=[.95, 0.05])
 
     files = os.listdir(FLAGS.X_dir)
     train_gen = False
@@ -132,9 +131,9 @@ def train():
 
         os.makedirs(FLAGS.out_dir + '/samples', exist_ok=True)
         for i in range(len(out)):
-            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_input.png'.format(epoch, i), Xtrain[i])
-            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i])
-            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])
+            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_input.png'.format(epoch, i), cv2.resize(Xtrain[i], (480, 852)))
+            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_pred.png'.format(epoch, i), cv2.resize(out[i], (480, 852)))
+            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_true.png'.format(epoch, i), cv2.resize(ytrain[i], (480, 852)) )
 
         os.makedirs(FLAGS.out_dir + '/gen', exist_ok=True)
         os.makedirs(FLAGS.out_dir + '/disc', exist_ok=True)

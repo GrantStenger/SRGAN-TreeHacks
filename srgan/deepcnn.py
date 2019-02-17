@@ -159,6 +159,6 @@ if __name__ == '__main__':
     tl.global_flag['mode'] = args.mode
 
     if tl.global_flag['mode'] == 'srgan':
-        train()
+        train(model)
     else:
         raise Exception("Unknown --mode")

@@ -24,10 +24,10 @@ from keras.optimizers import Adam
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--model_path', type=string, default=None, help='path to weights')
-parser.parse_args()
+parser.add_argument('--model_path', type=str, default=None, help='path to weights')
+args = parser.parse_args()
 
-model_path = parser.model_path
+model_path = args.model_path
 
 
 def preprocess_input(x):

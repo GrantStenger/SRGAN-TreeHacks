@@ -25,9 +25,14 @@ import argparse
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--model_path', type=str, default=None, help='path to weights')
+parser.add_argument('model_outdir', type=str, help='outdir path')
+
 args = parser.parse_args()
 
+outdir = args.model_outdir
 model_path = args.model_path
+
+os.makedirs(outdir, exist_ok=True)
 
 
 def preprocess_input(x):
@@ -71,7 +76,6 @@ if model_path is None:
 
     model.add(UpSampling2D(3))
 
-    
     model.add(Conv2D(3, (1,1), strides=(1,1),  activation='relu', padding='SAME' ))
     
     # Resize to fit output shape
@@ -109,12 +113,11 @@ ni = int(np.sqrt(batch_size))
 def train(model):
 
     ## create folders to save result images and trained model
-    save_dir_ginit = "samples/deepcnn/"
-    save_dir_gan = "samples/deepcnn/"
+    save_dir_ginit = outdir+"/samples/deepcnn/"
+    save_dir_gan = outdir+"/samples/deepcnn/"
     tl.files.exists_or_mkdir(save_dir_ginit)
     tl.files.exists_or_mkdir(save_dir_gan)
-    checkpoint_dir = "checkpoint"  # checkpoint_resize_conv
-    tl.files.exists_or_mkdir(checkpoint_dir)
+
 
     ###====================== PRE-LOAD DATA FILENAMES ===========================###
     train_hr_img_list = sorted(tl.files.load_file_list(path=config.TRAIN.hr_img_path, regx='.*.png', printable=False))
@@ -153,7 +156,7 @@ def train(model):
         print("\n\n\n\n DONE WITH REAL EPOCH {0} [*] save images".format(epoch))
 
         # Save Weights
-        model.save('weights/epoch_'+str(epoch)+'_upsample.h5py')
+        model.save(outdir+'/weights/epoch_'+str(epoch)+'_upsample.h5py')
 
         ## quick evaluation on train set
         out = model.predict(xtrain) 

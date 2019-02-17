@@ -9,4 +9,3 @@ def run_left_right(lr_vid, hr_vid, output_vid):
     -map [vid] -c:v libx264 -crf 23 -preset veryfast {2}".format(lr_vid, hr_vid, output_vid)
 
     subprocess.run(command, shell=True)
-

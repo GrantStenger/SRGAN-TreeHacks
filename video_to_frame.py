@@ -12,7 +12,7 @@ parser.add_argument('--res', default='240p',
                     help='desired download resolution')
 parser.add_argument('--video_name', default='test_vid',
                     help='name of video')
-parser.add_argument('--length', default=20, type=int, help='trimmed length of video')
+parser.add_argument('--length', default=60, type=int, help='trimmed length of video')
 args = parser.parse_args()
 
 YT_ROOT = 'https://www.youtube.com/watch?v='
@@ -90,4 +90,4 @@ def get_yt(link):
 
 
 # Tester code, call from main() of main program
-# video_to_frames(YT_ROOT+VIDEO_URL, RES, VIDEO_NAME, LENGTH)
+video_to_frames(YT_ROOT+VIDEO_URL, RES, VIDEO_NAME, LENGTH)

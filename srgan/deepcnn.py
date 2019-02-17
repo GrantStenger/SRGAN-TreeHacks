@@ -23,16 +23,6 @@ from keras.optimizers import Adam
 
 import argparse
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--model_path', type=str, default=None, help='path to weights')
-parser.add_argument('model_outdir', type=str, help='outdir path')
-
-args = parser.parse_args()
-
-outdir = args.model_outdir
-model_path = args.model_path
-
-os.makedirs(outdir, exist_ok=True)
 
 
 def preprocess_input(x):
@@ -168,16 +158,18 @@ def train(model):
         
        
 if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser()
 
-    parser.add_argument('--mode', type=str, default='srgan', help='srgan, evaluate')
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model_path', type=str, default=None, help='path to weights')
+    parser.add_argument('outdir', type=str, help='outdir path')
 
     args = parser.parse_args()
+    outdir = args.outdir
+    model_path = args.model_path
 
-    tl.global_flag['mode'] = args.mode
+    os.makedirs(outdir, exist_ok=True)
 
-    if tl.global_flag['mode'] == 'srgan':
-        train(model)
-    else:
-        raise Exception("Unknown --mode")
+ 
+    train(model)
+    

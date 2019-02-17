@@ -58,11 +58,11 @@ model_path = args.model_path
 
 os.makedirs(outdir, exist_ok=True)
 
+input_shape = (144, 256, 3)
+output_shape = (480, 852, 3)
 
 if model_path is None:
 
-    input_shape = (144, 256, 3)
-    output_shape = (480, 852)
 
     model = Sequential()
 
@@ -141,8 +141,8 @@ def train(model):
             xtrain = [] 
             ytrain = []
             for fp in batch:
-                xtrain.append(load_img(config.TRAIN.lr_img_path+fp, size=input_shape))
-                ytrain.append(load_img(config.TRAIN.hr_img_path+fp, size=output_shape))
+                xtrain.append(load_img(config.TRAIN.lr_img_path+fp, size=input_shape[0:2]))
+                ytrain.append(load_img(config.TRAIN.hr_img_path+fp, size=output_shape[0:2]))
 
             step_time = time.time()
 

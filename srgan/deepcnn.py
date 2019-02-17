@@ -16,7 +16,7 @@ from keras.preprocessing import image
 import cv2
 
 from keras import backend as K
-from keras.layers import Conv2D, Dense, Reshape, Lambda, Dropout, UpSampling2D, BatchNormalization
+from keras.layers import Conv2D, Dense, Reshape, Lambda, Dropout, UpSampling2D, BatchNormalization, Deconv2D
 from keras.layers.advanced_activations import LeakyReLU
 from keras.models import Model, Sequential
 from keras.optimizers import Adam
@@ -52,13 +52,10 @@ model.add(Lambda(to_float, input_shape=(240,426,3)))
 model.add(Conv2D(20, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
 model.add(LeakyReLU())
 
-model.add(UpSampling2D())
-
-model.add(Conv2D(50, (2,2), strides=(1,1),  activation=None, padding='SAME' ))
+model.add(Deconv2D(filters=20, kernel_size=(2,2)))
 model.add(LeakyReLU())
-model.add(BatchNormalization())
 
-model.add(Conv2D(3, (1,1), strides=(1,1),  activation='relu', padding='SAME' ))
+model.add(Conv2D(3, (2,2), strides=(1,1),  activation='relu', padding='SAME' ))
 
 
 def root_mean_squared_error(y_true, y_pred):
@@ -128,11 +125,9 @@ def train(model):
 
             model.fit(xtrain, ytrain)
 
-        log = "[*] Epoch: [%2d/%2d] time: %4.4fs, mse: %.8f" % (epoch, n_epoch_init, time.time() - epoch_time, total_mse_loss / n_iter)
-        print(log)
+        print("\n\n\n\n DONE WITH REAL EPOCH 1 [*] save images")
 
         out = model.predict(xtrain) 
-        print("\n\n\n\n DONE WITH REAL EPOCH 1 [*] save images")
         for i in range(len(out)):
             cv2.imwrite( save_dir_ginit + '/mse_epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i])
             cv2.imwrite( save_dir_ginit + '/mse_epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])

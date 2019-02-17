@@ -25,7 +25,7 @@ start_pos = args.start_pos
 timeout = args.timeout
 
 
-def download_video(yt, res, outdir, name='vid'):
+def download_video(yt, res, name='vid'):
     """
     yt: youtube object
     res: resolution; eg '144p'
@@ -135,7 +135,7 @@ for nvids, url in enumerate(urls):
         name = 'temp'
         outfile = 'data/'+name+'.mp4'
         
-        success = run_func_with_timeout(download_video, (yt, '144p', outdir, name), timeout=timeout)
+        success = run_func_with_timeout(download_video, (yt, '144p', name), timeout=timeout)
         if not success:
             continue 
 
@@ -153,7 +153,7 @@ for nvids, url in enumerate(urls):
             continue
         
         # Download 240p video
-        success = run_func_with_timeout(download_video, (yt, '240p', outdir, name), timeout=timeout )
+        success = run_func_with_timeout(download_video, (yt, '240p', name), timeout=timeout )
         if not success:
             continue 
         
@@ -168,7 +168,7 @@ for nvids, url in enumerate(urls):
         
 
         # Download 360p video
-        success = run_func_with_timeout(download_video, (yt, '360p', outdir, name), timeout=timeout )
+        success = run_func_with_timeout(download_video, (yt, '360p', name), timeout=timeout )
         if not success:
             continue 
 
@@ -180,7 +180,7 @@ for nvids, url in enumerate(urls):
             continue
 
         # Download 480p video
-        success = run_func_with_timeout(download_video, (yt, '480p', outdir, name), timeout=timeout )
+        success = run_func_with_timeout(download_video, (yt, '480p', name), timeout=timeout )
         if not success:
             continue 
 
@@ -193,7 +193,7 @@ for nvids, url in enumerate(urls):
 
 
         # Download 720p video
-        success = run_func_with_timeout(download_video, (yt, '720p', outdir, name), timeout=timeout )
+        success = run_func_with_timeout(download_video, (yt, '720p', name), timeout=timeout )
         if not success:
             continue 
 

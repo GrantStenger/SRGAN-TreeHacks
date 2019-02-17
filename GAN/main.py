@@ -36,7 +36,20 @@ def make_trainable(net, val):
     for l in net.layers:
         l.trainable = val
 
-def main():
+
+def evaluate(model=None, target=None):
+    if model is None:
+        model = FLAGS.gen_path
+    if target is None:
+        target = FLAGS.Xtrain
+
+    generator = load_model(model, custom_objects={'root_mean_squared_error':root_mean_squared_error, 'tf': tf, 'output_shape': (480, 852)})
+    generator.compile(optimizer='adam', loss=root_mean_squared_error, metrics=['accuracy'])
+    
+    inference = generator.predict(target)
+    return inference
+
+def train():
     os.makedirs(FLAGS.out_dir, exist_ok=True)
 
     # Load Generator
@@ -141,8 +154,12 @@ if __name__ == "__main__":
     argparse.add_argument('--batch_size', type=int, default=16, help='batch size')
     argparse.add_argument('--epochs', type=int, default=100, help='epochs')
     argparse.add_argument('--start_epoch', type=int, default=0, help='starting epoch')
+    argparse.add_argument("--eval", type=bool, default=False, help='train vs evaluate (true vs false)')
 
     # Parses known arguments
     FLAGS, unparsed = argparse.parse_known_args()
 
-    main()
+    if FLAGS.eval:
+        evaluate()
+    else:
+        train()

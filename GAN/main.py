@@ -62,8 +62,9 @@ def main():
     out_vgg = vgg(out_gen)
     out_disc = discriminator(out_vgg)
 
-    model = Model(inputs=input_layer, outputs=out_disc)
-    model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    model = Model(inputs=input_layer, outputs=[out_disc, out_gen])
+    model.compile(optimizer='adam', loss='binary_crossentropy', 
+                  metrics=['accuracy'], loss_weights=[.8, .2])
 
     files = os.listdir(FLAGS.X_dir)
     train_gen = False
@@ -86,16 +87,14 @@ def main():
             Xtrain = np.transpose(Xtrain, (0, 2, 1, 3))
             ytrain = np.transpose(ytrain, (0, 2, 1, 3))
 
-            if i % 10 == 0 and train_gen:
-                print("Training generator directly")
-                generator.fit(Xtrain, ytrain)
+           
 
-            elif train_gen:
+            if train_gen:
                 print("Training generator")
                 make_trainable(discriminator, False)
 
-                metrics = model.fit( Xtrain, np.ones([len(Xtrain)]) )
-
+                metrics = model.fit( Xtrain, [ np.ones([len(Xtrain)]), ytrain] )
+            
                 if metrics.history['acc'][0] > .8:
                     train_gen = False
             else:

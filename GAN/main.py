@@ -70,7 +70,7 @@ def main():
     train_gen = False
 
     # Define Training Loop
-    for epoch in range(FLAGS.epochs):
+    for epoch in range(FLAGS.start_epoch, FLAGS.epochs):
         np.random.shuffle(files)
         batches = chunks(files, FLAGS.batch_size)
 
@@ -139,7 +139,8 @@ if __name__ == "__main__":
     argparse.add_argument('--X_dir', type=str, default=None, help='path to X data directory')
     argparse.add_argument('--y_dir', type=str, default=None, help='path to y data directory')
     argparse.add_argument('--batch_size', type=int, default=16, help='batch size')
-    argparse.add_argument('--epochs', type=int, default=10, help='epochs')
+    argparse.add_argument('--epochs', type=int, default=100, help='epochs')
+    argparse.add_argument('--start_epoch', type=int, default=0, help='starting epoch')
 
     # Parses known arguments
     FLAGS, unparsed = argparse.parse_known_args()

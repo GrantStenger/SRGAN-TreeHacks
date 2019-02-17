@@ -49,6 +49,7 @@ def main():
     else:
         discriminator = load_model(FLAGS.disc_path)
 
+    generator.compile(optimizer='adam', loss=root_mean_squared_error, metrics=['accuracy'])
     discriminator.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     make_trainable(discriminator, False)
 
@@ -73,7 +74,7 @@ def main():
         np.random.shuffle(files)
         batches = chunks(files, FLAGS.batch_size)
 
-        for batch in list(batches)[0:2]:
+        for i, batch in enumerate(batches):
             Xtrain = []
             ytrain = []
             for fp in batch:
@@ -86,7 +87,11 @@ def main():
             Xtrain = np.transpose(Xtrain, (0, 2, 1, 3))
             ytrain = np.transpose(ytrain, (0, 2, 1, 3))
 
-            if train_gen:
+            if i % 10 == 0 and train_gen:
+                print("Training generator directly")
+                generator.fit(Xtrain, ytrain)
+
+            elif train_gen:
                 print("Training generator")
                 make_trainable(discriminator, False)
 
@@ -116,8 +121,8 @@ def main():
 
         print("Completed epoch {0} \n \n".format(epoch))
         out = generator.predict(Xtrain)
-        print(len(out))
 
+        os.makedirs(FLAGS.out_dir + '/samples', exist_ok=True)
         for i in range(len(out)):
             cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_input.png'.format(epoch, i), Xtrain[i])
             cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i])
@@ -126,6 +131,7 @@ def main():
         os.makedirs(FLAGS.out_dir + '/gen', exist_ok=True)
         os.makedirs(FLAGS.out_dir + '/disc', exist_ok=True)
         generator.save(FLAGS.out_dir + '/gen/epoch_{0}.h5py'.format(epoch))
+        make_trainable(discriminator, True)
         discriminator.save(FLAGS.out_dir + '/disc/epoch_{0}.h5py'.format(epoch))
 
 

@@ -64,7 +64,7 @@ model.add(LeakyReLU())
 model.add(Conv2D(3, (1,1), strides=(1,1),  activation='relu', padding='SAME' ))
 
 
-def _root_mean_squared_error(y_true, y_pred):
+def root_mean_squared_error(y_true, y_pred):
     return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
 
 model.compile(optimizer=Adam(), loss=root_mean_squared_error, metrics=['accuracy'])

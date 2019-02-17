@@ -72,13 +72,14 @@ if model_path is None:
 
     model.add(Lambda(to_float, input_shape=input_shape))
 
-    model.add(Conv2D(20, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
+    model.add(Conv2D(10, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
     model.add(Dropout(.15))
     model.add(LeakyReLU())
 
     model.add(UpSampling2D(2))
 
     model.add(Conv2D(3, (1,1), strides=(1,1),  activation='relu', padding='SAME' ))
+    model.add(Conv2D(3, (2,2), strides=(1,1),  activation='relu', padding='SAME' ))
     
     # Resize to fit output shape
     model.add( Lambda( lambda image: tf.image.resize_images( 

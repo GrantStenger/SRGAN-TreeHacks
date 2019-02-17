@@ -52,18 +52,9 @@ model.add(Lambda(to_float, input_shape=(240,426,3)))
 model.add(Conv2D(20, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
 model.add(LeakyReLU())
 
-
-model.add(Conv2D(20, (4,4), strides=(1,1),  activation=None, padding='SAME' ))
-model.add(LeakyReLU())
-model.add(BatchNormalization())
-
-model.add(Conv2D(30, (2,2), strides=(1,1),  activation=None, padding='SAME' ))
-model.add(LeakyReLU())
-model.add(BatchNormalization())
-
 model.add(UpSampling2D())
 
-model.add(Conv2D(30, (2,2), strides=(1,1),  activation=None, padding='SAME' ))
+model.add(Conv2D(50, (2,2), strides=(1,1),  activation=None, padding='SAME' ))
 model.add(LeakyReLU())
 model.add(BatchNormalization())
 

@@ -11,43 +11,45 @@ parser.add_argument('--frame_source',
                     help='location of frames')
 parser.add_argument('--output', required=False,
                     default='output.mp4', help='output video filename')
+parser.add_argument('--length', default=10, type=int,
+                    help='length of final video')
+
 args = parser.parse_args()
 
 FRAMES_DIR = args.frame_source
 OUTPUT = args.output
+LENGTH = args.length
 
 
 # Function that takes frames and uses CV to mush them into video
-def frames_to_video(frames_dir, outfile):
+def frames_to_video(frames_dir, outfile, length):
     """
     frame_dir: dir of frame .jpeg files
     output: name of .mp4 output video file
+    length: how long the final video should be
     """
     # Create list of all images
-    images = []
-    for f in os.listdir(frames_dir):
-        images.append(f)
+    total_images = len([name for name in os.listdir(frames_dir)])
+
+    # these many frames per second
+    frame_rate = total_images/length
 
     # Determine the width and height from the first image
-    image_path = os.path.join(frames_dir, images[0])
+    image_path = frames_dir + '/frame0.jpg'
     frame = cv2.imread(image_path)
     cv2.imshow('video', frame)
     height, width, channels = frame.shape
 
     # Define the codec and create VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(outfile, fourcc, 20.0, (width, height))
+    out = cv2.VideoWriter(outfile, fourcc, frame_rate, (width, height))
 
-    for image in images:
+    for temp in range(0, total_images):
 
-        image_path = os.path.join(frames_dir, image)
+        image_path = os.path.join(frames_dir + '/frame' + str(temp) + '.jpg')
         frame = cv2.imread(image_path)
-
         out.write(frame) # Write out frame to video
-
         cv2.imshow('video', frame)
-        if (cv2.waitKey(1) & 0xFF) == ord('q'): # Hit `q` to exit
-            break
 
     # Release everything if job is finished
     out.release()
@@ -56,4 +58,4 @@ def frames_to_video(frames_dir, outfile):
     print("The output video is {}".format(outfile))
 
 
-frames_to_video(FRAMES_DIR, OUTPUT)
+frames_to_video(FRAMES_DIR, OUTPUT, LENGTH)

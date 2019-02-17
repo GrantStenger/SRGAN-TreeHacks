@@ -59,7 +59,7 @@ def download_video(yt, res, name='vid'):
     """
     yt: youtube object
     res: resolution; eg '144p'
-    name: name of video
+    name: name of video, default vid
     """
     try:
         # filter by resolution and to mp4

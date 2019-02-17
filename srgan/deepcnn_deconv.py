@@ -49,7 +49,7 @@ def to_float(x):
 
 model.add(Lambda(to_float, input_shape=(240,426,3)))
 
-model.add(Conv2D(20, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
+model.add(Conv2D(10, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
 model.add(LeakyReLU())
 
 model.add(Deconv2D(filters=20, kernel_size=(2,2), strides=(2, 2), padding='SAME', ))
@@ -126,7 +126,7 @@ def train(model):
 
             model.fit(xtrain, ytrain)
 
-        print("\n\n\n\n DONE WITH REAL EPOCH 1 [*] save images")
+        print("\n\n\n\n DONE WITH REAL EPOCH {0} [*] save images".format(epoch))
 
         out = model.predict(xtrain) 
         for i in range(len(out)):
@@ -134,7 +134,7 @@ def train(model):
             cv2.imwrite( save_dir_ginit + '/mse_epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])
 
         # Save Weights
-        model.save('weights/epoch_'+epoch+'_deconv.h5py')
+        model.save('weights/epoch_'str(+epoch)+'_deconv.h5py')
 
         ## quick evaluation on train set
         out = model.predict(xtrain) 

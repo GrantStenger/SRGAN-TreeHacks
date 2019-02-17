@@ -53,8 +53,10 @@ model.add(Conv2D(20, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
 model.add(LeakyReLU())
 
 model.add(UpSampling2D())
-#model.add(Deconv2D(filters=20, kernel_size=(2,2)))
-#model.add(LeakyReLU())
+
+model.add(Deconv2D(filters=20, kernel_size=(2,2), stride=2, padding='SAME'))
+model.add(LeakyReLU())
+model.add(BatchNormalization())
 
 model.add(Conv2D(3, (2,2), strides=(1,1),  activation='relu', padding='SAME' ))
 
@@ -85,8 +87,8 @@ ni = int(np.sqrt(batch_size))
 def train(model):
 
     ## create folders to save result images and trained model
-    save_dir_ginit = "samples/deepcnn/"
-    save_dir_gan = "samples/deepcnn/"
+    save_dir_ginit = "samples/deepcnn_deconv"
+    save_dir_gan = "samples/deepcnn_deconv"
     tl.files.exists_or_mkdir(save_dir_ginit)
     tl.files.exists_or_mkdir(save_dir_gan)
     checkpoint_dir = "checkpoint"  # checkpoint_resize_conv
@@ -126,16 +128,20 @@ def train(model):
 
             model.fit(xtrain, ytrain)
 
-        print("\n\n\n\n DONE WITH REAL EPOCH {0} [*] save images".format(epoch))
+        print("\n\n\n\n DONE WITH REAL EPOCH 1 [*] save images")
+
+        out = model.predict(xtrain) 
+        for i in range(len(out)):
+            cv2.imwrite( save_dir_ginit + '/mse_epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i])
+            cv2.imwrite( save_dir_ginit + '/mse_epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])
 
         # Save Weights
-        model.save('weights/epoch_'+epoch+'_upsample.h5py')
+        model.save('weights/epoch_'+epoch+'_deconv.h5py')
 
         ## quick evaluation on train set
         out = model.predict(xtrain) 
-
+        print("[*] save images")
         for i in range(len(out)):
-            cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_input.png'.format(epoch, i), xtrain[i])
             cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i])
             cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])
         

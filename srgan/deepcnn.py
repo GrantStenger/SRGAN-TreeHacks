@@ -141,8 +141,8 @@ def train(model):
             xtrain = [] 
             ytrain = []
             for fp in batch:
-                xtrain.append(load_img(config.TRAIN.lr_img_path+fp, size=input_shape)
-                ytrain.append(load_img(config.TRAIN.hr_img_path+fp, size=output_shape)
+                xtrain.append(load_img(config.TRAIN.lr_img_path+fp, size=input_shape))
+                ytrain.append(load_img(config.TRAIN.hr_img_path+fp, size=output_shape))
 
             step_time = time.time()
 

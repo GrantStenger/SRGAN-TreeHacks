@@ -15,8 +15,6 @@ def video_to_frames(video_url, res, video_name, length):
     length: trim length
     """
     # grab YouTube object from url and download it to data/
-    frames = []
-
     yt = get_yt(video_url)
     if yt is None:
         return
@@ -34,13 +32,8 @@ def video_to_frames(video_url, res, video_name, length):
             os.makedirs("video_frames" + res)
         cv2.imwrite("video_frames" + res + "/frame%d.jpg" % count, image)  # save frame as JPEG file
         success, image = vid_cap.read()
-
-        frames.append(image)
-
         print('Read a new frame: ', success)
         count += 1
-        
-    return frames
 
 
 # Helper function to download YT vid given YouTube Object
@@ -86,7 +79,7 @@ if __name__ == "__main__":
 
     # REPLICATE ARGUMENT PARSING IN MAIN #
     parser = argparse.ArgumentParser()
-    parser.add_argument('--video_ext', default='eKMp-4Mmqdw',
+    parser.add_argument('--video_ext', default='dQw4w9WgXcQ',
                         help='extension in YT url after v=')
     parser.add_argument('--res', default='240p',
                         help='desired download resolution')

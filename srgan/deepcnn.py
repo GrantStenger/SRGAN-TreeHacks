@@ -52,8 +52,9 @@ model.add(Lambda(to_float, input_shape=(240,426,3)))
 model.add(Conv2D(20, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
 model.add(LeakyReLU())
 
-model.add(Deconv2D(filters=20, kernel_size=(2,2)))
-model.add(LeakyReLU())
+model.add(UpSampling2D())
+#model.add(Deconv2D(filters=20, kernel_size=(2,2)))
+#model.add(LeakyReLU())
 
 model.add(Conv2D(3, (2,2), strides=(1,1),  activation='relu', padding='SAME' ))
 

@@ -4,7 +4,7 @@ import cv2
 import os
 from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
-
+# REPLICATE ARGUMENT PARSING IN MAIN #
 parser = argparse.ArgumentParser()
 parser.add_argument('--video_ext', default='eKMp-4Mmqdw',
                     help='extension in YT url after v=')
@@ -89,4 +89,5 @@ def get_yt(link):
     return yt
 
 
-video_to_frames(YT_ROOT+VIDEO_URL, RES, VIDEO_NAME, LENGTH)
+# Tester code, call from main() of main program
+# video_to_frames(YT_ROOT+VIDEO_URL, RES, VIDEO_NAME, LENGTH)

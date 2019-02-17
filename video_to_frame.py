@@ -1,13 +1,15 @@
 from pytube import YouTube
 import argparse
+import cv2
+import os
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--video_ext', default='eKMp-4Mmqdw',
+parser.add_argument('--video_ext', default='P1LNrzr8JzM',
                     help='extension in YT url after v=')
 parser.add_argument('--res', default='240p',
                     help='desired download resolution')
-parser.add_argument('--video_name', default='usc_village',
+parser.add_argument('--video_name', default='test_vid',
                     help='name of video')
 args = parser.parse_args()
 
@@ -30,9 +32,17 @@ def video_to_frames(video_url, res, video_name, length=20):
         return
     download_video(yt, res, video_name)
 
-    # trim everything but first 'length' seconds of video
-    ffmpeg_extract_subclip('data/' + video_name + '.mp4', 0, 20,
-                           targetname='trimmed_' + video_name + '.mp4')
+    # loads video and extracts frame by frame
+    vid_cap = cv2.VideoCapture('data/' + VIDEO_NAME + '.mp4')
+    success, image = vid_cap.read()
+    count = 0
+    while success:
+        if not os.path.exists("video_frames"):
+            os.makedirs("video_frames")
+        cv2.imwrite("video_frames/frame%d.jpg" % count, image)  # save frame as JPEG file
+        success, image = vid_cap.read()
+        print('Read a new frame: ', success)
+        count += 1
 
 
 # Helper function to download YT vid given YouTube Object

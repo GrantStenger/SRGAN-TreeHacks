@@ -54,7 +54,7 @@ model.add(LeakyReLU())
 
 model.add(UpSampling2D())
 
-model.add(Deconv2D(filters=20, kernel_size=(2,2), stride=2, padding='SAME'))
+model.add(Deconv2D(filters=20, kernel_size=(2,2), strides=(2, 2), padding='SAME', ))
 model.add(LeakyReLU())
 model.add(BatchNormalization())
 

@@ -60,7 +60,7 @@ os.makedirs(outdir, exist_ok=True)
 os.makedirs(outdir+'/weights')
 
 input_shape = (144, 256, 3)
-output_shape = (480, 852, 3)
+output_shape = (240, 426, 3)
 
 if model_path is None:
 
@@ -76,7 +76,7 @@ if model_path is None:
     model.add(Dropout(.15))
     model.add(LeakyReLU())
 
-    model.add(UpSampling2D(3))
+    model.add(UpSampling2D(2))
 
     model.add(Conv2D(3, (1,1), strides=(1,1),  activation='relu', padding='SAME' ))
     

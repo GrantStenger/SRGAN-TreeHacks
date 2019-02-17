@@ -20,12 +20,12 @@ config.TRAIN.lr_decay = 0.1
 config.TRAIN.decay_every = int(config.TRAIN.n_epoch / 2)
 
 ## train set location
-config.TRAIN.hr_img_path = '/hdd/datasets/srgan/video_data/480px/train/'
+config.TRAIN.hr_img_path = '/hdd/datasets/srgan/video_data/240px/train/'
 config.TRAIN.lr_img_path = '/hdd/datasets/srgan/video_data/144px/train/'
 
 config.VALID = edict()
 ## test set location
-config.VALID.hr_img_path = '/hdd/datasets/srgan/video_data/480px/test'
+config.VALID.hr_img_path = '/hdd/datasets/srgan/video_data/240px/test'
 config.VALID.lr_img_path = '/hdd/datasets/srgan/video_data/144px/test'
 
 def log_config(filename, cfg):

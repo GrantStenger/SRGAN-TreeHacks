@@ -74,7 +74,7 @@ model.compile(optimizer=Adam(), loss=root_mean_squared_error, metrics=['accuracy
 ###====================== HYPER-PARAMETERS ===========================###
 ## Adam
 batch_size = config.TRAIN.batch_size
-BATCH_SIZE = 128
+BATCH_SIZE = 16
 lr_init = config.TRAIN.lr_init
 beta1 = config.TRAIN.beta1
 ## initialize G
@@ -85,9 +85,6 @@ lr_decay = config.TRAIN.lr_decay
 decay_every = config.TRAIN.decay_every
 
 ni = int(np.sqrt(batch_size))
-
-
-
 
 
 def train(model):

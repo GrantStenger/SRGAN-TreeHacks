@@ -18,8 +18,16 @@ import cv2
 from keras import backend as K
 from keras.layers import Conv2D, Dense, Reshape, Lambda, Dropout, UpSampling2D, BatchNormalization, Deconv2D
 from keras.layers.advanced_activations import LeakyReLU
-from keras.models import Model, Sequential
+from keras.models import Model, Sequential, load_model
 from keras.optimizers import Adam
+
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('--model_path', type=string, default=None, help='path to weights')
+parser.parse_args()
+
+model_path = parser.model_path
 
 
 def preprocess_input(x):
@@ -41,27 +49,40 @@ def chunks(l, n):
         yield l[i:i + n]
 
 
-
-model = Sequential()
-
-def to_float(x):
-    return K.cast(x, "float32" )
-
-model.add(Lambda(to_float, input_shape=(240,426,3)))
-
-model.add(Conv2D(20, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
-model.add(LeakyReLU())
-
-model.add(UpSampling2D())
-#model.add(Deconv2D(filters=20, kernel_size=(2,2)))
-#model.add(LeakyReLU())
-
-model.add(Conv2D(3, (2,2), strides=(1,1),  activation='relu', padding='SAME' ))
-
-
 def root_mean_squared_error(y_true, y_pred):
     return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
 
+
+if model_path is None:
+
+    output_shape = (480, 852)
+
+    model = Sequential()
+
+    def to_float(x):
+        return K.cast(x, "float32" )
+
+    model.add(Lambda(to_float, input_shape=(240,426,3)))
+
+    model.add(Conv2D(20, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
+    model.add(LeakyReLU())
+
+    model.add(UpSampling2D())
+
+    
+    model.add(Conv2D(3, (2,2), strides=(1,1),  activation='relu', padding='SAME' ))
+    
+    # Resize to fit output shape
+    model.add( Lambda( lambda image: tf.image.resize_images( 
+    image, output_shape ), 
+    method = tf.image.ResizeMethod.BICUBIC,
+    align_corners = True, # possibly important
+    preserve_aspect_ratio = True
+    ) )
+else:
+    model = load_model(model_path,
+                       custom_objects={'root_mean_squared_error':root_mean_squared_error})
+    
 model.compile(optimizer=Adam(), loss=root_mean_squared_error, metrics=['accuracy'])
 
 

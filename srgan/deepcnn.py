@@ -58,8 +58,8 @@ model_path = args.model_path
 os.makedirs(outdir, exist_ok=True)
 os.makedirs(outdir+'/weights')
 
-input_shape = (240, 426, 3)
-output_shape = (480, 852, 3)
+input_shape = (426, 240, 3)
+output_shape = (852, 480, 3)
 
 if model_path is None:
 
@@ -70,10 +70,6 @@ if model_path is None:
         return K.cast(x, "float32" )
 
     model.add(Lambda(to_float, input_shape=input_shape))
-
-    model.add(Conv2D(20, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
-    model.add(Dropout(.25))
-    model.add(LeakyReLU(alpha=.1))
 
     model.add(UpSampling2D(2))
 
@@ -164,7 +160,7 @@ def train(model):
         out = model.predict(xtrain)
 
         for i in range(len(out)):
-            cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_input.png'.format(epoch, i), xtrain[i])
+            cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_input.png'.format(epoch, i), cv2.resize(xtrain[i], (480, 852)))
             cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i])
             cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])
 

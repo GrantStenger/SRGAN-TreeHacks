@@ -138,7 +138,7 @@ def train(model):
         print(log)
 
         out = model.predict(xtrain) 
-        print("[*] save images")
+        print("\n\n\n\n DONE WITH REAL EPOCH 1 [*] save images")
         for i in range(len(out)):
             cv2.imwrite( save_dir_ginit + '/mse_epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i])
             cv2.imwrite( save_dir_ginit + '/mse_epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])

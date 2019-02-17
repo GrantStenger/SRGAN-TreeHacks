@@ -74,10 +74,11 @@ if model_path is None:
     
     # Resize to fit output shape
     model.add( Lambda( lambda image: tf.image.resize_images( 
-    image, output_shape ) 
-    method = tf.image.ResizeMethod.BICUBIC,
-    align_corners = True, # possibly important
-    ) )
+        image, output_shape,
+        method = tf.image.ResizeMethod.BICUBIC,
+        align_corners = True, # possibly important
+        ) ) )
+
 else:
     model = load_model(model_path,
                        custom_objects={'root_mean_squared_error':root_mean_squared_error})

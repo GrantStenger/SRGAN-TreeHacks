@@ -69,7 +69,7 @@ model.compile(optimizer=Adam(), loss=root_mean_squared_error, metrics=['accuracy
 ###====================== HYPER-PARAMETERS ===========================###
 ## Adam
 batch_size = config.TRAIN.batch_size
-BATCH_SIZE = 32
+BATCH_SIZE = 64
 lr_init = config.TRAIN.lr_init
 beta1 = config.TRAIN.beta1
 ## initialize G
@@ -129,7 +129,7 @@ def train(model):
         print("\n\n\n\n DONE WITH REAL EPOCH {0} [*] save images".format(epoch))
 
         # Save Weights
-        model.save('weights/epoch_'+epoch+'_upsample.h5py')
+        model.save('weights/epoch_'+str(epoch)+'_upsample.h5py')
 
         ## quick evaluation on train set
         out = model.predict(xtrain) 

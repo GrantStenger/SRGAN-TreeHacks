@@ -206,7 +206,7 @@ def main():
 
 
 if __name__ == "__main__":
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--outdir', default='data/',
                         help='output dir to place images')

@@ -106,6 +106,7 @@ XDIR = outdir+'144px/'
 YDIR = outdir+'240px/'
 Y2DIR = outdir+'360px/'
 Y3DIR = outdir+'480px/'
+Y4DIR = outdir+'720px/'
 
 # Make sure dirs exist
 os.makedirs(outdir, exist_ok=True)
@@ -114,6 +115,7 @@ os.makedirs(XDIR, exist_ok=True)
 os.makedirs(YDIR, exist_ok=True)
 os.makedirs(Y2DIR, exist_ok=True)
 os.makedirs(Y3DIR, exist_ok=True)
+os.makedirs(Y4DIR, exist_ok=True)
 
 img_count = len(os.listdir(XDIR))
 N_FRAMES_ITER = 11
@@ -190,6 +192,19 @@ for nvids, url in enumerate(urls):
         if not success:
             continue
 
+
+        # Download 480p video
+        success = run_func_with_timeout(download_video, (yt, '720p', outdir, name), timeout=timeout )
+        if not success:
+            continue 
+
+        # Ditto for 720p
+        cap = cv2.VideoCapture(outfile)
+        imgs720, sucess = get_frames(cap, pos)
+        del cap
+        if not success:
+            continue
+
         
         # Save images
         for i in range(len(imgs144)):
@@ -197,7 +212,7 @@ for nvids, url in enumerate(urls):
             cv2.imwrite(YDIR+str(img_count)+'.png', imgs240[i])
             cv2.imwrite(Y2DIR+str(img_count)+'.png', imgs360[i])
             cv2.imwrite(Y3DIR+str(img_count)+'.png', imgs480[i])
-            
+            ccv2.imwrite(Y4DIR+str(img_count)+'.png', imgs720[i])
             img_count+=1
         
         print("SUCCESS: ", nvids)
@@ -205,5 +220,3 @@ for nvids, url in enumerate(urls):
 
     except:
         continue
-    
-    

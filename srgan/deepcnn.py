@@ -164,7 +164,8 @@ def train(model):
         out = model.predict(xtrain) 
 
         for i in range(len(out)):
-            cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_input.png'.format(epoch, i), xtrain[i])
+            cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_input.png'.format(epoch, i), 
+                        cv2.resize(xtrain[i], output_shape[0:2])  )
             cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i])
             cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])
         

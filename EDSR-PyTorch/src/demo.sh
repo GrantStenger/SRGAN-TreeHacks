@@ -29,9 +29,9 @@
 #python main.py --data_test Set5+Set14+B100+Urban100+DIV2K --data_range 801-900 --scale 4 --n_resblocks 32 --n_feats 256 --res_scale 0.1 --pre_train download --test_only --self_ensemble
 
 # Test your own images
-python main.py --data_test Demo --scale 2 --pre_train download --test_only --save_results
+python main.py --data_test Demo --scale 3 --pre_train download --test_only --save_results
 
-# Advanced - Test with JPEG images 
+# Advanced - Test with JPEG images
 #python main.py --model MDSR --data_test Demo --scale 2+3+4 --pre_train download --test_only --save_results
 
 # Advanced - Training with adversarial loss
@@ -53,4 +53,3 @@ python main.py --data_test Demo --scale 2 --pre_train download --test_only --sav
 #python main.py --template RCAN --save RCAN_BIX4_G10R20P48 --scale 4 --reset --save_results --patch_size 192 --pre_train ../experiment/model/RCAN_BIX2.pt
 # RCAN_BIX8_G10R20P48, input=48x48, output=384x384
 #python main.py --template RCAN --save RCAN_BIX8_G10R20P48 --scale 8 --reset --save_results --patch_size 384 --pre_train ../experiment/model/RCAN_BIX2.pt
-

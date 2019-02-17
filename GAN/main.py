@@ -3,6 +3,7 @@ import argparse, os
 from keras.models import load_model, Sequential, Model
 from keras.layers import Conv2D, Dense, MaxPooling2D, Input
 import keras.backend as K
+from sklearn.utils import shuffle
 from discriminator import create_discriminator
 import cv2
 import numpy as np
@@ -77,7 +78,7 @@ def main():
 
             if train_gen:
                 print("Training generator")
-                make_trainable(discriminator, False)
+                #make_trainable(discriminator, False)
 
                 metrics = model.fit( Xtrain, np.ones([len(Xtrain)]) )
 
@@ -87,20 +88,18 @@ def main():
                 print("Training discriminator")
                 make_trainable(discriminator, True)
 
-                inds = np.random.rand(len(Xtrain)) 
-                half_val = np.percentile(inds, q=50)
-                inds = inds>half_val
-
                 # Get generated data from inputs
-                gen_input = Xtrain[inds]
+                gen_input = Xtrain
                 gen_output = generator.predict(gen_input)
 
-                true_output = ytrain[~inds]
-                disc_input = np.concatenate([gen_output, true_output])
-                ground_truth = np.concatenate( [ np.zeros([len(gen_output)]), np.ones([len(true_output)]) ] )
+                disc_input = np.concatenate([gen_output, ytrain])
+                ground_truth = np.concatenate( [ np.zeros([len(gen_output)]), np.ones([len(ytrain)]) ] )
+
+                disc_input, ground_truth = shuffle(disc_input, ground_truth)
 
                 metrics = discriminator.fit(disc_input, ground_truth)
-                if metrics.history['acc'][0] > .8:
+                print(discriminator.layers[-1].get_weights())
+                if metrics.history['acc'][0] > 1:
                     train_gen = True
 
         print("Completed epoch {0} \n \n".format(epoch))

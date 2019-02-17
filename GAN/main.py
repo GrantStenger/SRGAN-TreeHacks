@@ -1,11 +1,12 @@
 # Import Dependencies
 import argparse, os
 from keras.models import load_model, Sequential, Model
-from keras.layers import Conv2D, Dense, MaxPooling2D
+from keras.layers import Conv2D, Dense, MaxPooling2D, Input
 import keras.backend as K
 from discriminator import create_discriminator
 import cv2
 import numpy as np
+import tensorflow as tf
 
 
 def root_mean_squared_error(y_true, y_pred):
@@ -24,11 +25,17 @@ def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
+def make_trainable(net, val):
+    net.trainable = val
+    for l in net.layers:
+        l.trainable = val
 
 def main():
+    os.makedirs(FLAGS.out_dir, exist_ok=True)
+
     # Load Generator
-    generator = load_model(FLAGS.gen_path, custom_objects={'root_mean_squared_error':root_mean_squared_error})
-    generator.compile(optimizer=Adam(), loss=root_mean_squared_error, metrics=['accuracy'])
+    generator = load_model(FLAGS.gen_path, custom_objects={'root_mean_squared_error':root_mean_squared_error, 'tf': tf, 'output_shape': (480, 852)})
+    generator.compile(optimizer='adam', loss=root_mean_squared_error, metrics=['accuracy'])
 
     # Load Discriminator
     if FLAGS.disc_path is None:
@@ -36,16 +43,22 @@ def main():
     else:
         discriminator = load_model(FLAGS.disc_path)
 
+    discriminator.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    make_trainable(discriminator, False)
+
     # Define Loss Functions
-    model = Model(inputs=generator, outputs=discriminator)
+    input_layer = Input(shape=(240, 426, 3))
+    out_gen = generator(input_layer)
+    out_disc = discriminator(out_gen)
+
+    model = Model(inputs=input_layer, outputs=out_disc)
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-    files = os.listdir(X_dir)
-    train_GAN = False
-
+    files = os.listdir(FLAGS.X_dir)
+    train_gen = False
+    
     # Define Training Loop
-    for epoch in range(EPOCHS):
-
+    for epoch in range(FLAGS.epochs):
         np.random.shuffle(files)
         batches = chunks(files, FLAGS.batch_size)
 
@@ -53,8 +66,8 @@ def main():
             Xtrain = []
             ytrain = []
             for fp in batch:
-                Xtrain.append(load_img(FLAGS.X_dir+fp, size=input_shape[0:2]))
-                ytrain.append(load_img(FLAGS.y_dir+fp, size=output_shape[0:2]))
+                Xtrain.append(load_img(FLAGS.X_dir+fp, size=(240, 426)))
+                ytrain.append(load_img(FLAGS.y_dir+fp, size=(480, 852)))
 
             Xtrain = np.squeeze(Xtrain)
             ytrain = np.squeeze(ytrain)
@@ -62,32 +75,35 @@ def main():
             Xtrain = np.transpose(Xtrain, (0, 2, 1, 3))
             ytrain = np.transpose(ytrain, (0, 2, 1, 3))
 
-            if train_GAN:
-                discriminator.trainable = False
-                generator.trainable = True
+            if train_gen:
+                print("Training generator")
+                make_trainable(discriminator, False)
 
                 metrics = model.fit( Xtrain, np.ones([len(Xtrain)]) )
 
-                if metrics['accuracy'] > .8:
-                    train_GAN = False
+                if metrics.history['acc'][0] > .8:
+                    train_gen = False
             else:
-                discriminator.trainable = True
-                generator.trainable = False
+                print("Training discriminator")
+                make_trainable(discriminator, True)
 
-                inds = np.random.rand(len(Xtrain)) > .5
+                inds = np.random.rand(len(Xtrain)) 
+                half_val = np.percentile(inds, q=50)
+                inds = inds>half_val
 
                 # Get generated data from inputs
                 gen_input = Xtrain[inds]
                 gen_output = generator.predict(gen_input)
 
-                ground_truth = ~inds
-                true_output = ytrain[ground_truth]
+                true_output = ytrain[~inds]
                 disc_input = np.concatenate([gen_output, true_output])
+                ground_truth = np.concatenate( [ np.zeros([len(gen_output)]), np.ones([len(true_output)]) ] )
 
                 metrics = discriminator.fit(disc_input, ground_truth)
-                if metrics['accuracy'] > .8:
-                    train_GAN = True
+                if metrics.history['acc'][0] > .8:
+                    train_gen = True
 
+        print("Completed epoch {0} \n \n".format(epoch))
         out = generator.predict(Xtrain)
 
         for i in range(len(out)):
@@ -100,15 +116,16 @@ def main():
 
 if __name__ == "__main__":
     # Instantiate Argument Parser
-    argparse = ArgumentParser()
+    argparse = argparse.ArgumentParser()
     argparse.add_argument('--gen_path', type=str, default=None, help='path to generator .h5py')
     argparse.add_argument('--disc_path', type=str, default=None, help='path to discriminator .h5py')
     argparse.add_argument('--out_dir', type=str, default=None, help='path to export directory')
     argparse.add_argument('--X_dir', type=str, default=None, help='path to X data directory')
     argparse.add_argument('--y_dir', type=str, default=None, help='path to y data directory')
-    argparse.add_argument('--batch_size', type=int, default=64, help='batch size')
+    argparse.add_argument('--batch_size', type=int, default=16, help='batch size')
+    argparse.add_argument('--epochs', type=int, default=10, help='epochs')
 
     # Parses known arguments
-    FLAGS, unparsed = parser.parse_known_args()
+    FLAGS, unparsed = argparse.parse_known_args()
 
     main()

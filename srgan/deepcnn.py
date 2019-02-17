@@ -16,7 +16,7 @@ from keras.preprocessing import image
 import cv2
 
 from keras import backend as K
-from keras.layers import Conv2D, Dense, Reshape, Lambda, Dropout, UpSampling2D
+from keras.layers import Conv2D, Dense, Reshape, Lambda, Dropout, UpSampling2D, BatchNormalization
 from keras.layers.advanced_activations import LeakyReLU
 from keras.models import Model, Sequential
 from keras.optimizers import Adam
@@ -48,19 +48,25 @@ def to_float(x):
     return K.cast(x, "float32" )
 
 model.add(Lambda(to_float, input_shape=(240,426,3)))
-model.add(Conv2D(20, (7,7), strides=(1,1),  activation=None, padding='SAME' ))
+
+model.add(Conv2D(20, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
 model.add(LeakyReLU())
 
-model.add(Conv2D(40, (2,2), strides=(1,1),  activation=None, padding='SAME' ))
+
+model.add(Conv2D(20, (4,4), strides=(1,1),  activation=None, padding='SAME' ))
 model.add(LeakyReLU())
+model.add(BatchNormalization())
+
+model.add(Conv2D(30, (2,2), strides=(1,1),  activation=None, padding='SAME' ))
+model.add(LeakyReLU())
+model.add(BatchNormalization())
 
 model.add(UpSampling2D())
 
-model.add(Conv2D(40, (2,2), strides=(1,1),  activation=None, padding='SAME' ))
+model.add(Conv2D(30, (2,2), strides=(1,1),  activation=None, padding='SAME' ))
 model.add(LeakyReLU())
+model.add(BatchNormalization())
 
-model.add(Conv2D(20, (2,2), strides=(1,1),  activation=None, padding='SAME' ))
-model.add(LeakyReLU())
 model.add(Conv2D(3, (1,1), strides=(1,1),  activation='relu', padding='SAME' ))
 
 
@@ -74,7 +80,7 @@ model.compile(optimizer=Adam(), loss=root_mean_squared_error, metrics=['accuracy
 ###====================== HYPER-PARAMETERS ===========================###
 ## Adam
 batch_size = config.TRAIN.batch_size
-BATCH_SIZE = 128
+BATCH_SIZE = 64
 lr_init = config.TRAIN.lr_init
 beta1 = config.TRAIN.beta1
 ## initialize G

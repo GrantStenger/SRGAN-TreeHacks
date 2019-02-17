@@ -15,7 +15,10 @@
   - SRGAN implementation and integration with YouTube dataset
   - RCAN implementation
 - Saturday, Feb 16, 5:00pm
-  - Have a generated upscaled image
+  - Have an upscaled image generated from a CNN
+- Saturday, Feb 16, 11:00pm
+  - Have an upscaled image generated from a GAN
+
 
 ### Resources
 

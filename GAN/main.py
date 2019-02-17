@@ -3,7 +3,6 @@ import argparse, os
 from keras.models import load_model, Sequential, Model
 from keras.layers import Conv2D, Dense, MaxPooling2D, Input
 import keras.backend as K
-import keras 
 from sklearn.utils import shuffle
 from discriminator import create_discriminator
 import cv2
@@ -68,7 +67,7 @@ def main():
 
     files = os.listdir(FLAGS.X_dir)
     train_gen = False
-    
+
     # Define Training Loop
     for epoch in range(FLAGS.epochs):
         np.random.shuffle(files)

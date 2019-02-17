@@ -26,6 +26,7 @@ def frames_to_video(frames_dir, outfile, length):
     """
     frame_dir: dir of frame .jpeg files
     output: name of .mp4 output video file
+    length: how long the final video should be
     """
     # Create list of all images
     total_images = len([name for name in os.listdir(frames_dir)])

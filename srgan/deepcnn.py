@@ -57,6 +57,7 @@ outdir = args.outdir
 model_path = args.model_path
 
 os.makedirs(outdir, exist_ok=True)
+os.makedirs(outdir+'/weights')
 
 input_shape = (144, 256, 3)
 output_shape = (480, 852, 3)

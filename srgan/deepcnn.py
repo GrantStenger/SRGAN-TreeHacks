@@ -48,6 +48,17 @@ def root_mean_squared_error(y_true, y_pred):
     return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
 
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--model_path', type=str, default=None, help='path to weights')
+parser.add_argument('outdir', type=str, help='outdir path')
+
+args = parser.parse_args()
+outdir = args.outdir
+model_path = args.model_path
+
+os.makedirs(outdir, exist_ok=True)
+
+
 if model_path is None:
 
     input_shape = (144, 256, 3)
@@ -158,18 +169,6 @@ def train(model):
         
        
 if __name__ == '__main__':
-
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, default=None, help='path to weights')
-    parser.add_argument('outdir', type=str, help='outdir path')
-
-    args = parser.parse_args()
-    outdir = args.outdir
-    model_path = args.model_path
-
-    os.makedirs(outdir, exist_ok=True)
-
  
     train(model)
     

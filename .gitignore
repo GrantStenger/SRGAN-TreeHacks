@@ -1,2 +1,5 @@
 *.png
 *.npy
+
+data
+video_frames

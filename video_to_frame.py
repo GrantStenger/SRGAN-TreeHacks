@@ -6,7 +6,7 @@ from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 
 # REPLICATE ARGUMENT PARSING IN MAIN #
 parser = argparse.ArgumentParser()
-parser.add_argument('--video_ext', default='eKMp-4Mmqdw',
+parser.add_argument('--video_ext', default='dQw4w9WgXcQ',
                     help='extension in YT url after v=')
 parser.add_argument('--res', default='240p',
                     help='desired download resolution')

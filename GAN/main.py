@@ -90,14 +90,11 @@ def train():
             Xtrain = []
             ytrain = []
             for fp in batch:
-                Xtrain.append(load_img(FLAGS.X_dir+fp, size=(240, 426)))
-                ytrain.append(load_img(FLAGS.y_dir+fp, size=(480, 852)))
+                Xtrain.append(load_img(FLAGS.X_dir+fp, size=(426, 240)))
+                ytrain.append(load_img(FLAGS.y_dir+fp, size=(852, 480)))
 
             Xtrain = np.squeeze(Xtrain)
             ytrain = np.squeeze(ytrain)
-
-            Xtrain = np.transpose(Xtrain, (0, 2, 1, 3))
-            ytrain = np.transpose(ytrain, (0, 2, 1, 3))
 
             if train_gen:
                 print("Training generator")
@@ -131,9 +128,9 @@ def train():
 
         os.makedirs(FLAGS.out_dir + '/samples', exist_ok=True)
         for i in range(len(out)):
-            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_input.png'.format(epoch, i), cv2.resize(Xtrain[i], (480, 852)))
-            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_pred.png'.format(epoch, i), cv2.resize(out[i], (480, 852)))
-            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_true.png'.format(epoch, i), cv2.resize(ytrain[i], (480, 852)) )
+            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_input.png'.format(epoch, i), cv2.resize(Xtrain[i], (852, 480)))
+            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i]) 
+            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])
 
         os.makedirs(FLAGS.out_dir + '/gen', exist_ok=True)
         os.makedirs(FLAGS.out_dir + '/disc', exist_ok=True)

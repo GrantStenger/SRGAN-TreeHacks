@@ -58,8 +58,8 @@ model_path = args.model_path
 os.makedirs(outdir, exist_ok=True)
 os.makedirs(outdir+'/weights')
 
-input_shape = (426, 240, 3)
-output_shape = (852, 480, 3)
+input_shape = (240, 426, 3)
+output_shape = (480, 852, 3)
 
 if model_path is None:
 
@@ -73,12 +73,12 @@ if model_path is None:
 
     model.add(UpSampling2D(2))
 
-    model.add(Conv2D(3, (3,3), strides=(1,1), padding='SAME', activation='softplus'))
+    model.add(Conv2D(3, (4,4), strides=(1,1), padding='SAME', activation='softplus'))
 
 
     # Resize to fit output shape
     model.add( Lambda( lambda image: tf.image.resize_images(
-        image, output_shape[0:2],
+        image, (480, 852),
         method = tf.image.ResizeMethod.BICUBIC,
         align_corners = True, # possibly important
         ) ) )
@@ -138,16 +138,13 @@ def train(model):
             xtrain = []
             ytrain = []
             for fp in batch:
-                xtrain.append(load_img(config.TRAIN.lr_img_path+fp, size=input_shape[0:2]))
-                ytrain.append(load_img(config.TRAIN.hr_img_path+fp, size=output_shape[0:2]))
+                xtrain.append(load_img(config.TRAIN.lr_img_path+fp, size=(426, 240) ))
+                ytrain.append(load_img(config.TRAIN.hr_img_path+fp, size=(852, 480) ))
 
             step_time = time.time()
 
             xtrain = np.squeeze(xtrain)
             ytrain = np.squeeze(ytrain)
-
-            xtrain = np.transpose(xtrain, (0, 2, 1, 3))
-            ytrain = np.transpose(ytrain, (0, 2, 1, 3))
 
             model.fit(xtrain, ytrain)
 
@@ -160,7 +157,7 @@ def train(model):
         out = model.predict(xtrain)
 
         for i in range(len(out)):
-            cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_input.png'.format(epoch, i), cv2.resize(xtrain[i], (480, 852)))
+            cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_input.png'.format(epoch, i), cv2.resize(xtrain[i], (852, 480)))
             cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i])
             cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])
 

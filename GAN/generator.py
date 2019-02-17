@@ -24,7 +24,6 @@ from keras.optimizers import Adam
 import argparse
 
 
-
 def preprocess_input(x):
     x /= 255.
     x -= 0.5

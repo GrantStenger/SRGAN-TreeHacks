@@ -3,6 +3,7 @@ import argparse, os
 from keras.models import load_model, Sequential, Model
 from keras.layers import Conv2D, Dense, MaxPooling2D, Input
 import keras.backend as K
+import keras 
 from sklearn.utils import shuffle
 from discriminator import create_discriminator
 import cv2
@@ -13,6 +14,11 @@ import tensorflow as tf
 def root_mean_squared_error(y_true, y_pred):
     return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
 
+def preprocess_vgg(x):
+    x /= 255.
+    x -= 0.5
+    x *= 2.
+    return x
 
 def load_img(img, size):
     full_img = cv2.imread(img)
@@ -46,6 +52,10 @@ def main():
 
     discriminator.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
     make_trainable(discriminator, False)
+
+    # Load VGG
+    vgg = keras.applications.VGG16(include_top=False)
+
 
     # Define Loss Functions
     input_layer = Input(shape=(240, 426, 3))
@@ -97,8 +107,12 @@ def main():
 
                 disc_input, ground_truth = shuffle(disc_input, ground_truth)
 
-                metrics = discriminator.fit(disc_input, ground_truth)
-                print(discriminator.layers[-1].get_weights())
+                processed_disc_input = [ preprocess_vgg(img) for img in disc_input ]
+                vgg_output = vgg.predict(processed_disc_input, batch_size=1)
+
+                metrics = discriminator.fit(vgg_output, ground_truth)
+                print("Weight: ", discriminator.layers[-1].get_weights()[0][0])
+
                 if metrics.history['acc'][0] > 1:
                     train_gen = True
 

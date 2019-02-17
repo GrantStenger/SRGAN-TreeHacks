@@ -41,7 +41,6 @@ def main():
 
     # Load Generator
     generator = load_model(FLAGS.gen_path, custom_objects={'root_mean_squared_error':root_mean_squared_error, 'tf': tf, 'output_shape': (480, 852)})
-    generator.compile(optimizer='adam', loss=root_mean_squared_error, metrics=['accuracy'])
 
     # Load Discriminator
     if FLAGS.disc_path is None:
@@ -64,8 +63,8 @@ def main():
     out_disc = discriminator(out_vgg)
 
     model = Model(inputs=input_layer, outputs=[out_disc, out_gen])
-    model.compile(optimizer='adam', loss='binary_crossentropy', 
-                  metrics=['accuracy'], loss_weights=[.8, .2])
+    model.compile(optimizer='adam', loss=['binary_crossentropy', root_mean_squared_error],  
+                  metrics=['accuracy'], loss_weights=[.9, .1])
 
     files = os.listdir(FLAGS.X_dir)
     train_gen = False

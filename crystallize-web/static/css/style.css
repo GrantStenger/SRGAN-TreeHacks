@@ -1,0 +1,28 @@
+.title {
+    text-align: center;
+}
+
+#input {
+    display: block;
+    width: 50%;
+    margin: 0 auto;
+}
+#go {
+    display: block;
+    margin: 0 auto;
+    margin-top: 10px;
+}
+
+#yt_video {
+    display: block;
+    width: 1280px;
+    height: 720px;
+    border: 2px solid black;
+    margin: 0 auto;
+    margin-top: 20px;
+}
+
+#yt_name {
+    padding-top:10px;
+    text-align: center;
+}

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css')}}" />
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<title>Crystallize</title>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1 class="title">Compare Videos</h1>
+    </div>
+    <div class="box"><input type="text" class="maininput" id="input" placeholder="Insert YouTube URL here..." name="youtube_url"/>
+        <button id="go" type="button" class="button">Go</button>
+    </div>
+    <!-- video part -->
+    <div id="video">
+        <!-- here will be videos -->
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="{{ url_for('static', filename='js/index.js') }}"></script>
+</html>

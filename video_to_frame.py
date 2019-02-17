@@ -19,8 +19,9 @@ RES = args.res
 VIDEO_NAME = args.video_name
 
 
-# Function that returns array of frames given YouTube video url, res, name
-def video_to_frames(video_url, res, video_name, length=20):
+# Function that saves array of frames to video_frames/
+# given YouTube video url, res, name
+def video_to_frames(video_url, res, video_name):
     """
     video_url: url of youtube video
     res: resolution; eg '144p'

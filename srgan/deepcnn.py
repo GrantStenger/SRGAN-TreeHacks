@@ -55,6 +55,7 @@ def root_mean_squared_error(y_true, y_pred):
 
 if model_path is None:
 
+    input_shape = (144, 256, 3)
     output_shape = (480, 852)
 
     model = Sequential()
@@ -62,7 +63,7 @@ if model_path is None:
     def to_float(x):
         return K.cast(x, "float32" )
 
-    model.add(Lambda(to_float, input_shape=(144,256,3)))
+    model.add(Lambda(to_float, input_shape=input_shape))
 
     model.add(Conv2D(20, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
     model.add(Dropout(.15))

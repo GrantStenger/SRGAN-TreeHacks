@@ -25,7 +25,6 @@ def load_img(img, size):
     full_img = np.expand_dims(full_img, axis=0)
     return full_img
 
-
 def chunks(l, n):
     """Yield successive n-sized chunks from l."""
     for i in range(0, len(l), n):
@@ -45,7 +44,7 @@ def main():
 
     # Load Discriminator
     if FLAGS.disc_path is None:
-        discriminator = create_discriminator(FLAGS.out_dir, (480, 852, 3))
+        discriminator = create_discriminator(FLAGS.out_dir, (15, 26, 512))
     else:
         discriminator = load_model(FLAGS.disc_path)
 
@@ -54,12 +53,13 @@ def main():
 
     # Load VGG
     vgg = keras.applications.VGG16(include_top=False)
-
+    vgg.trainable = False
 
     # Define Loss Functions
     input_layer = Input(shape=(240, 426, 3))
     out_gen = generator(input_layer)
-    out_disc = discriminator(out_gen)
+    out_vgg = vgg(out_gen)
+    out_disc = discriminator(out_vgg)
 
     model = Model(inputs=input_layer, outputs=out_disc)
     model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
@@ -72,7 +72,7 @@ def main():
         np.random.shuffle(files)
         batches = chunks(files, FLAGS.batch_size)
 
-        for batch in batches:
+        for batch in list(batches)[0:2]:
             Xtrain = []
             ytrain = []
             for fp in batch:
@@ -87,7 +87,7 @@ def main():
 
             if train_gen:
                 print("Training generator")
-                #make_trainable(discriminator, False)
+                make_trainable(discriminator, False)
 
                 metrics = model.fit( Xtrain, np.ones([len(Xtrain)]) )
 
@@ -103,27 +103,29 @@ def main():
 
                 disc_input = np.concatenate([gen_output, ytrain])
                 ground_truth = np.concatenate( [ np.zeros([len(gen_output)]), np.ones([len(ytrain)]) ] )
-
                 disc_input, ground_truth = shuffle(disc_input, ground_truth)
 
-                processed_disc_input = [ preprocess_vgg(img) for img in disc_input ]
-                vgg_output = vgg.predict(processed_disc_input, batch_size=1)
+
+                vgg_output = vgg.predict(disc_input, batch_size=1)
 
                 metrics = discriminator.fit(vgg_output, ground_truth)
-                print("Weight: ", discriminator.layers[-1].get_weights()[0][0])
 
-                if metrics.history['acc'][0] > 1:
+                if metrics.history['acc'][0] > .8:
                     train_gen = True
 
         print("Completed epoch {0} \n \n".format(epoch))
         out = generator.predict(Xtrain)
+        print(len(out))
 
         for i in range(len(out)):
-            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_input.png'.format(epoch, i), xtrain[i])
+            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_input.png'.format(epoch, i), Xtrain[i])
             cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i])
             cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])
 
+        os.makedirs(FLAGS.out_dir + '/gen', exist_ok=True)
+        os.makedirs(FLAGS.out_dir + '/disc', exist_ok=True)
         generator.save(FLAGS.out_dir + '/gen/epoch_{0}.h5py'.format(epoch))
+        discriminator.save(FLAGS.out_dir + '/disc/epoch_{0}.h5py'.format(epoch))
 
 
 if __name__ == "__main__":

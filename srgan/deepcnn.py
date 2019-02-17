@@ -71,11 +71,10 @@ model.compile(optimizer=Adam(), loss=root_mean_squared_error, metrics=['accuracy
 
 
 
-
 ###====================== HYPER-PARAMETERS ===========================###
 ## Adam
 batch_size = config.TRAIN.batch_size
-BATCH_SIZE = 8 
+BATCH_SIZE = 128
 lr_init = config.TRAIN.lr_init
 beta1 = config.TRAIN.beta1
 ## initialize G

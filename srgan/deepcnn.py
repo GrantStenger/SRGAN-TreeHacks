@@ -71,11 +71,10 @@ model.compile(optimizer=Adam(), loss=root_mean_squared_error, metrics=['accuracy
 
 
 
-
 ###====================== HYPER-PARAMETERS ===========================###
 ## Adam
 batch_size = config.TRAIN.batch_size
-BATCH_SIZE = 8 
+BATCH_SIZE = 128
 lr_init = config.TRAIN.lr_init
 beta1 = config.TRAIN.beta1
 ## initialize G
@@ -139,7 +138,7 @@ def train(model):
         print(log)
 
         out = model.predict(xtrain) 
-        print("[*] save images")
+        print("\n\n\n\n DONE WITH REAL EPOCH 1 [*] save images")
         for i in range(len(out)):
             cv2.imwrite( save_dir_ginit + '/mse_epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i])
             cv2.imwrite( save_dir_ginit + '/mse_epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])

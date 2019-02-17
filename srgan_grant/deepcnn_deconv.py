@@ -9,7 +9,7 @@ import logging, scipy
 
 import tensorflow as tf
 import tensorlayer as tl
-
+from model import SRGAN_g, SRGAN_d, Vgg19_simple_api
 from utils import *
 from config import config, log_config
 from keras.preprocessing import image
@@ -18,11 +18,8 @@ import cv2
 from keras import backend as K
 from keras.layers import Conv2D, Dense, Reshape, Lambda, Dropout, UpSampling2D, BatchNormalization, Deconv2D
 from keras.layers.advanced_activations import LeakyReLU
-from keras.models import Model, Sequential, load_model
+from keras.models import Model, Sequential
 from keras.optimizers import Adam
-
-import argparse
-
 
 
 def preprocess_input(x):
@@ -32,7 +29,8 @@ def preprocess_input(x):
     return x
 
 def load_img(img, size):
-    full_img = cv2.imread(img)
+    full_img = image.load_img(img)
+    full_img = image.img_to_array(full_img)
     full_img = cv2.resize(full_img, size)
     full_img = np.expand_dims(full_img, axis=0)
     return full_img
@@ -43,55 +41,27 @@ def chunks(l, n):
         yield l[i:i + n]
 
 
+
+model = Sequential()
+
+def to_float(x):
+    return K.cast(x, "float32" )
+
+model.add(Lambda(to_float, input_shape=(240,426,3)))
+
+model.add(Conv2D(10, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
+model.add(LeakyReLU())
+
+model.add(Deconv2D(filters=20, kernel_size=(2,2), strides=(2, 2), padding='SAME', ))
+model.add(LeakyReLU())
+model.add(BatchNormalization())
+
+model.add(Conv2D(3, (2,2), strides=(1,1),  activation='relu', padding='SAME' ))
+
+
 def root_mean_squared_error(y_true, y_pred):
     return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
 
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--model_path', type=str, default=None, help='path to weights')
-parser.add_argument('outdir', type=str, help='outdir path')
-
-args = parser.parse_args()
-outdir = args.outdir
-model_path = args.model_path
-
-os.makedirs(outdir, exist_ok=True)
-os.makedirs(outdir+'/weights')
-
-input_shape = (240, 426, 3)
-output_shape = (480, 852, 3)
-
-if model_path is None:
-
-
-    model = Sequential()
-
-    def to_float(x):
-        return K.cast(x, "float32" )
-
-    model.add(Lambda(to_float, input_shape=input_shape))
-
-    model.add(Conv2D(20, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
-    model.add(Dropout(.25))
-    model.add(LeakyReLU(alpha=.1))
-
-    model.add(UpSampling2D(2))
-
-    model.add(Conv2D(3, (3,3), strides=(1,1), padding='SAME', activation='softplus'))
-
-    
-    # Resize to fit output shape
-    model.add( Lambda( lambda image: tf.image.resize_images( 
-        image, output_shape[0:2],
-        method = tf.image.ResizeMethod.BICUBIC,
-        align_corners = True, # possibly important
-        ) ) )
-
-else:
-
-    model = load_model(model_path,
-                       custom_objects={'root_mean_squared_error':root_mean_squared_error})
-    
 model.compile(optimizer=Adam(), loss=root_mean_squared_error, metrics=['accuracy'])
 
 
@@ -99,7 +69,7 @@ model.compile(optimizer=Adam(), loss=root_mean_squared_error, metrics=['accuracy
 ###====================== HYPER-PARAMETERS ===========================###
 ## Adam
 batch_size = config.TRAIN.batch_size
-BATCH_SIZE = 64
+BATCH_SIZE = 32
 lr_init = config.TRAIN.lr_init
 beta1 = config.TRAIN.beta1
 ## initialize G
@@ -115,11 +85,12 @@ ni = int(np.sqrt(batch_size))
 def train(model):
 
     ## create folders to save result images and trained model
-    save_dir_ginit = outdir+"/samples/deepcnn/"
-    save_dir_gan = outdir+"/samples/deepcnn/"
+    save_dir_ginit = "samples/deepcnn_deconv"
+    save_dir_gan = "samples/deepcnn_deconv"
     tl.files.exists_or_mkdir(save_dir_ginit)
     tl.files.exists_or_mkdir(save_dir_gan)
-
+    checkpoint_dir = "checkpoint"  # checkpoint_resize_conv
+    tl.files.exists_or_mkdir(checkpoint_dir)
 
     ###====================== PRE-LOAD DATA FILENAMES ===========================###
     train_hr_img_list = sorted(tl.files.load_file_list(path=config.TRAIN.hr_img_path, regx='.*.png', printable=False))
@@ -142,8 +113,8 @@ def train(model):
             xtrain = [] 
             ytrain = []
             for fp in batch:
-                xtrain.append(load_img(config.TRAIN.lr_img_path+fp, size=input_shape[0:2]))
-                ytrain.append(load_img(config.TRAIN.hr_img_path+fp, size=output_shape[0:2]))
+                xtrain.append(load_img(config.TRAIN.lr_img_path+fp, size=(240, 426)))
+                ytrain.append(load_img(config.TRAIN.hr_img_path+fp, size=(480, 852)))
 
             step_time = time.time()
 
@@ -157,20 +128,33 @@ def train(model):
 
         print("\n\n\n\n DONE WITH REAL EPOCH {0} [*] save images".format(epoch))
 
+        out = model.predict(xtrain) 
+        for i in range(len(out)):
+            cv2.imwrite( save_dir_ginit + '/mse_epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i])
+            cv2.imwrite( save_dir_ginit + '/mse_epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])
+
         # Save Weights
-        model.save(outdir+'/weights/epoch_'+str(epoch)+'_upsample.h5py')
+        model.save('weights/epoch_'str(+epoch)+'_deconv.h5py')
 
         ## quick evaluation on train set
         out = model.predict(xtrain) 
-
+        print("[*] save images")
         for i in range(len(out)):
-            cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_input.png'.format(epoch, i), 
-                        cv2.resize(xtrain[i], output_shape[0:2])  )
             cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i])
             cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])
         
        
 if __name__ == '__main__':
- 
-    train(model)
-    
+    import argparse
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--mode', type=str, default='srgan', help='srgan, evaluate')
+
+    args = parser.parse_args()
+
+    tl.global_flag['mode'] = args.mode
+
+    if tl.global_flag['mode'] == 'srgan':
+        train(model)
+    else:
+        raise Exception("Unknown --mode")

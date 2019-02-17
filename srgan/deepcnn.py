@@ -74,10 +74,9 @@ if model_path is None:
     
     # Resize to fit output shape
     model.add( Lambda( lambda image: tf.image.resize_images( 
-    image, output_shape ), 
+    image, output_shape ) 
     method = tf.image.ResizeMethod.BICUBIC,
     align_corners = True, # possibly important
-    preserve_aspect_ratio = True
     ) )
 else:
     model = load_model(model_path,

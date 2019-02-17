@@ -32,8 +32,7 @@ def preprocess_input(x):
     return x
 
 def load_img(img, size):
-    full_img = image.load_img(img)
-    full_img = image.img_to_array(full_img)
+    full_img = cv2.imread(img)
     full_img = cv2.resize(full_img, size)
     full_img = np.expand_dims(full_img, axis=0)
     return full_img
@@ -59,8 +58,8 @@ model_path = args.model_path
 os.makedirs(outdir, exist_ok=True)
 os.makedirs(outdir+'/weights')
 
-input_shape = (144, 256, 3)
-output_shape = (240, 426, 3)
+input_shape = (240, 426, 3)
+output_shape = (480, 852, 3)
 
 if model_path is None:
 
@@ -72,13 +71,12 @@ if model_path is None:
 
     model.add(Lambda(to_float, input_shape=input_shape))
 
-    model.add(Conv2D(10, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
+    model.add(Conv2D(20, (1,1), strides=(1,1),  activation=None, padding='SAME' ))
     model.add(Dropout(.15))
     model.add(LeakyReLU())
 
     model.add(UpSampling2D(2))
 
-    model.add(Conv2D(3, (1,1), strides=(1,1),  activation='relu', padding='SAME' ))
     model.add(Conv2D(3, (2,2), strides=(1,1),  activation='relu', padding='SAME' ))
     
     # Resize to fit output shape

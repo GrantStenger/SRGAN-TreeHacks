@@ -1,6 +1,7 @@
 # Super Resolution GAN TreeHacks 2019
 
 ### Description
+TreeHacks 2019: Best computer vision prize and IBM’s #1 favorite health hack. Upscaling low resolution videos with a novel super resolution GAN architecture. 
 
 ### Timeline
 

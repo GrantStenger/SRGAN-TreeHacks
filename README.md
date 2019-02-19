@@ -1,7 +1,7 @@
-# Super Resolution GAN TreeHacks 2019
+# Crystallize: Bringing clarity to every video in the world.
 
 ### Description
-TreeHacks 2019: Best computer vision prize and IBM’s #1 favorite health hack. Upscaling low resolution videos with a novel super resolution GAN architecture. 
+TreeHacks 2019: Best computer vision prize and IBM’s #1 favorite health hack. Upscaling low resolution videos with a novel super resolution GAN architecture.
 
 ### Timeline
 
@@ -19,7 +19,15 @@ TreeHacks 2019: Best computer vision prize and IBM’s #1 favorite health hack. 
   - Have an upscaled image generated from a CNN
 - Saturday, Feb 16, 11:00pm
   - Have an upscaled image generated from a GAN
-
+- Sunday, Feb 17, 3:00am
+  - Finish devpost
+  - Upscale a whole video
+- Sunday, Feb 17, 8:00am
+  - Write quick frontend
+  - Optimize video data upscaling 
+- Sunday, Feb 17, 10:00am
+  - Finish data pipeline so user can upscale any YouTube video of their choosing in realtime.
+  - Hacking stops!
 
 ### Resources
 

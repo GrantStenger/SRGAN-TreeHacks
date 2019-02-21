@@ -1,88 +1,117 @@
-# Import Dependencies
-import argparse, os
-import keras
-from keras.models import load_model, Sequential, Model
-from keras.layers import Conv2D, Dense, MaxPooling2D, Input
-import keras.backend as K
-from sklearn.utils import shuffle
-from discriminator import create_discriminator
+import argparse
+import os
 import cv2
 import numpy as np
 import tensorflow as tf
+import keras
+from keras.models import load_model, Model
+from keras.layers import Input
+from sklearn.utils import shuffle
+from discriminator import create_discriminator
+from generator import create_generator
 
+from utils import make_trainable, root_mean_squared_error, chunks, load_img
 
-def root_mean_squared_error(y_true, y_pred):
-    return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
-
-def preprocess_vgg(x):
-    x /= 255.
-    x -= 0.5
-    x *= 2.
-    return x
-
-def load_img(img, size):
-    full_img = cv2.imread(img)
-    full_img = cv2.resize(full_img, size)
-    full_img = np.expand_dims(full_img, axis=0)
-    return full_img
-
-def chunks(l, n):
-    """Yield successive n-sized chunks from l."""
-    for i in range(0, len(l), n):
-        yield l[i:i + n]
-
-def make_trainable(net, val):
-    net.trainable = val
-    for l in net.layers:
-        l.trainable = val
-
-def evaluate(model=None, target=None):
-    if model is None:
-        model = FLAGS.gen_path
-    if target is None:
-        target = FLAGS.Xtrain
-
-    generator = load_model(model, custom_objects={'root_mean_squared_error':root_mean_squared_error, 'tf': tf, 'output_shape': (480, 852)})
-    generator.compile(optimizer='adam', loss=root_mean_squared_error, metrics=['accuracy'])
-    
-    inference = generator.predict(target)
-    return inference
-
-def train():
+def makedirs():
     os.makedirs(FLAGS.out_dir, exist_ok=True)
+    os.makedirs(FLAGS.out_dir + "/weights", exist_ok=True)
+    os.makedirs(FLAGS.out_dir + "/weights/ginit", exist_ok=True)
+    os.makedirs(FLAGS.out_dir + "/weights/gen", exist_ok=True)
+    os.makedirs(FLAGS.out_dir + "/weights/disc", exist_ok=True)
+    os.makedirs(FLAGS.out_dir + "/samples", exist_ok=True)
+    os.makedirs(FLAGS.out_dir + "/samples/ginit", exist_ok=True)
+    os.makedirs(FLAGS.out_dir + "/samples/gen", exist_ok=True)
 
-    # Load Generator
-    generator = load_model(FLAGS.gen_path, custom_objects={'root_mean_squared_error':root_mean_squared_error, 'tf': tf, 'output_shape': (480, 852)})
+def initialize_generator():
+    if FLAGS.gen_path is None:
+        generator = create_generator((240, 426, 3), (480, 852, 3), 2)
+    else:
+        params = {"root_mean_squared_error": root_mean_squared_error,
+                  "tf": tf,
+                  "output_shape": (480, 852)}
+
+        generator = load_model(FLAGS.gen_path, custom_objects=params)
+
+    generator.compile(optimizer="adam",
+                      loss=root_mean_squared_error,
+                      metrics=["accuracy"])
+
+    return generator
+
+def train_generator():
+    generator = initialize_generator()
+
+    files = os.listdir(FLAGS.Xtrain_dir)
+
+    for epoch in range(FLAGS.gen_start_epoch, FLAGS.gen_epochs):
+        np.random.shuffle(files)
+        batches = chunks(files, FLAGS.batch_size)
+
+        for batch in batches:
+            Xtrain = []
+            ytrain = []
+            for filepath in batch:
+                Xtrain.append(load_img(FLAGS.Xtrain_dir + filepath,
+                                       size=(426, 240)))
+                ytrain.append(load_img(FLAGS.ytrain_dir + filepath,
+                                       size=(852, 480)))
+
+            Xtrain = np.squeeze(Xtrain)
+            ytrain = np.squeeze(ytrain)
+
+            generator.fit(Xtrain, ytrain)
+
+        print("Completed epoch {0}".format(epoch))
+
+        # quick evaluation on train set
+        out = generator.predict(Xtrain)
+
+        for i in enumerate(out):
+            cv2.imwrite(FLAGS.out_dir + "/samples/ginit/epoch_{0}_img_{1}_input.png".format(epoch, i), Xtrain[i])
+            cv2.imwrite(FLAGS.out_dir + "/samples/ginit/epoch_{0}_img_{1}_pred.png".format(epoch, i), out[i])
+            cv2.imwrite(FLAGS.out_dir + "/samples/ginit/epoch_{0}_img_{1}_true.png".format(epoch, i), ytrain[i])
+
+        generator.save(FLAGS.out_dir + "/weights/ginit/epoch_{0}".format(epoch) + ".h5py")
+
+    return generator
+
+def main():
+    makedirs()
+
+    generator = train_generator()
 
     # Load Discriminator
     if FLAGS.disc_path is None:
-        discriminator = create_discriminator(FLAGS.out_dir, (15, 26, 512))
+        discriminator = create_discriminator((15, 26, 512))
     else:
         discriminator = load_model(FLAGS.disc_path)
 
-    generator.compile(optimizer='adam', loss=root_mean_squared_error, metrics=['accuracy'])
-    discriminator.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+    discriminator.compile(optimizer="adam",
+                          loss="binary_crossentropy",
+                          metrics=["accuracy"])
     make_trainable(discriminator, False)
 
     # Load VGG
     vgg = keras.applications.VGG16(include_top=False)
     vgg.trainable = False
 
-    # Define Loss Functions
+    # Create GAN Model
     input_layer = Input(shape=(240, 426, 3))
     out_gen = generator(input_layer)
     out_vgg = vgg(out_gen)
     out_disc = discriminator(out_vgg)
 
     model = Model(inputs=input_layer, outputs=[out_disc, out_gen])
-    model.compile(optimizer='adam', loss=['binary_crossentropy', root_mean_squared_error],  
-                  metrics=['accuracy'], loss_weights=[.95, 0.05])
+    model.compile(optimizer="adam",
+                  loss=["binary_crossentropy", root_mean_squared_error],
+                  loss_weights=[.95, 0.05],
+                  metrics=["accuracy"])
 
-    files = os.listdir(FLAGS.X_dir)
+    files = os.listdir(FLAGS.Xtrain_dir)
     train_gen = False
 
     # Define Training Loop
-    for epoch in range(FLAGS.start_epoch, FLAGS.epochs):
+    for epoch in range(FLAGS.gan_start_epoch, FLAGS.gan_epochs):
         np.random.shuffle(files)
         batches = chunks(files, FLAGS.batch_size)
 
@@ -90,8 +119,8 @@ def train():
             Xtrain = []
             ytrain = []
             for fp in batch:
-                Xtrain.append(load_img(FLAGS.X_dir+fp, size=(426, 240)))
-                ytrain.append(load_img(FLAGS.y_dir+fp, size=(852, 480)))
+                Xtrain.append(load_img(FLAGS.Xtrain_dir+fp, size=(426, 240)))
+                ytrain.append(load_img(FLAGS.ytrain_dir+fp, size=(852, 480)))
 
             Xtrain = np.squeeze(Xtrain)
             ytrain = np.squeeze(ytrain)
@@ -100,8 +129,8 @@ def train():
                 print("Training generator")
                 make_trainable(discriminator, False)
 
-                metrics = model.fit( Xtrain, [ np.ones([len(Xtrain)]), ytrain] )
-                if metrics.history['discriminator_acc'][0] > .8:
+                metrics = model.fit(Xtrain, [np.ones([len(Xtrain)]), ytrain])
+                if metrics.history["discriminator_acc"][0] > .8:
                     train_gen = False
             else:
                 print("Training discriminator")
@@ -112,7 +141,8 @@ def train():
                 gen_output = generator.predict(gen_input)
 
                 disc_input = np.concatenate([gen_output, ytrain])
-                ground_truth = np.concatenate( [ np.zeros([len(gen_output)]), np.ones([len(ytrain)]) ] )
+                ground_truth = np.concatenate([np.zeros([len(gen_output)]),
+                                               np.ones([len(ytrain)])])
                 disc_input, ground_truth = shuffle(disc_input, ground_truth)
 
 
@@ -120,42 +150,54 @@ def train():
 
                 metrics = discriminator.fit(vgg_output, ground_truth)
 
-                if metrics.history['acc'][0] > .8:
+                if metrics.history["acc"][0] > .8:
                     train_gen = True
 
         print("Completed epoch {0} \n \n".format(epoch))
         out = generator.predict(Xtrain)
 
-        os.makedirs(FLAGS.out_dir + '/samples', exist_ok=True)
-        for i in range(len(out)):
-            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_input.png'.format(epoch, i), Xtrain[i])
-            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_pred.png'.format(epoch, i), out[i]) 
-            cv2.imwrite( FLAGS.out_dir + '/samples/epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])
+        os.makedirs(FLAGS.out_dir + "/samples", exist_ok=True)
+        for i in enumerate(out):
+            cv2.imwrite(FLAGS.out_dir + "/samples/gen/epoch_{0}_img_{1}_input.png".format(epoch, i), Xtrain[i])
+            cv2.imwrite(FLAGS.out_dir + "/samples/gen/epoch_{0}_img_{1}_pred.png".format(epoch, i), out[i])
+            cv2.imwrite(FLAGS.out_dir + "/samples/gen/epoch_{0}_img_{1}_true.png".format(epoch, i), ytrain[i])
 
-        os.makedirs(FLAGS.out_dir + '/gen', exist_ok=True)
-        os.makedirs(FLAGS.out_dir + '/disc', exist_ok=True)
-        generator.save(FLAGS.out_dir + '/gen/epoch_{0}.h5py'.format(epoch))
+        generator.save(FLAGS.out_dir + "/gen/epoch_{0}.h5py".format(epoch))
         make_trainable(discriminator, True)
-        discriminator.save(FLAGS.out_dir + '/disc/epoch_{0}.h5py'.format(epoch))
+        discriminator.save(FLAGS.out_dir + "/disc/epoch_{0}.h5py".format(epoch))
 
 
 if __name__ == "__main__":
-    # Instantiate Argument Parser
-    argparse = argparse.ArgumentParser()
-    argparse.add_argument('--gen_path', type=str, default=None, help='path to generator .h5py')
-    argparse.add_argument('--disc_path', type=str, default=None, help='path to discriminator .h5py')
-    argparse.add_argument('--out_dir', type=str, default=None, help='path to export directory')
-    argparse.add_argument('--X_dir', type=str, default=None, help='path to X data directory')
-    argparse.add_argument('--y_dir', type=str, default=None, help='path to y data directory')
-    argparse.add_argument('--batch_size', type=int, default=16, help='batch size')
-    argparse.add_argument('--epochs', type=int, default=100, help='epochs')
-    argparse.add_argument('--start_epoch', type=int, default=0, help='starting epoch')
-    argparse.add_argument("--eval", type=bool, default=False, help='train vs evaluate (true vs false)')
+    # Instantiates Argument Parser
+    parser = argparse.ArgumentParser()
+
+    # Adds arguments
+    parser.add_argument("--gen_path", type=str, default=None,
+                        help="path to generator .h5py")
+    parser.add_argument("--disc_path", type=str, default=None,
+                        help="path to discriminator .h5py")
+    parser.add_argument("--out_dir", type=str, default=None,
+                        help="path to export directory")
+    parser.add_argument("--Xtrain_dir", type=str, default=None,
+                        help="path to Xtrain data directory")
+    parser.add_argument("--Xtest_dir", type=str, default=None,
+                        help="path to Xtest data directory")
+    parser.add_argument("--ytrain_dir", type=str, default=None,
+                        help="path to ytrain data directory")
+    parser.add_argument("--ytest_dir", type=str, default=None,
+                        help="path to ytest data directory")
+    parser.add_argument("--batch_size", type=int, default=16,
+                        help="batch size")
+    parser.add_argument("--gan_epochs", type=int, default=100,
+                        help="number of GAN epochs")
+    parser.add_argument("--gan_start_epoch", type=int, default=0,
+                        help="starting epoch for GAN")
+    parser.add_argument("--gen_epochs", type=int, default=10,
+                        help="number of generator epochs")
+    parser.add_argument("--gen_start_epoch", type=int, default=0,
+                        help="starting epoch for generator")
 
     # Parses known arguments
-    FLAGS, unparsed = argparse.parse_known_args()
+    FLAGS, _ = parser.parse_known_args()
 
-    if FLAGS.eval:
-        evaluate()
-    else:
-        train()
+    main()

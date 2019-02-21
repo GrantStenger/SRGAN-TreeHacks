@@ -1,18 +1,45 @@
-from pytube import YouTube
-import argparse
-import cv2
 import os
 from subprocess import call
+import cv2
+import numpy as np
+import tensorflow as tf
 from keras.models import load_model
-import tensorflow as tf 
 import keras.backend as K
 
 
+def make_trainable(net, val):
+    net.trainable = val
+    for layer in net.layers:
+        layer.trainable = val
+
+def preprocess_input(x):
+    """ Normalize an input. """
+    x /= 255.
+    x -= 0.5
+    x *= 2.
+    return x
+
+def load_img(img, size):
+    """ Load an image with CV2. """
+    full_img = cv2.imread(img)
+    full_img = cv2.resize(full_img, size)
+    full_img = np.expand_dims(full_img, axis=0)
+    return full_img
+
+
+def to_float(x):
+    return K.cast(x, "float32")
+
+
+def chunks(l, n):
+    """ Yield successive n-sized chunks from l. """
+    for i in range(0, len(l), n):
+        yield l[i:i + n]
 
 
 def root_mean_squared_error(y_true, y_pred):
+    """ Define the RMSE loss function. """
     return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
-
 
 
 def process_file(input_filepath, output_dest, model):

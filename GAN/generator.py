@@ -22,7 +22,7 @@ def create_generator(input_shape, output_shape, resize_factor):
     model.add(Lambda(lambda image: tf.image.resize_images(
         image, output_shape,
         method=tf.image.ResizeMethod.BICUBIC,
-        align_corners=True,
+        align_corners=True
         )))
 
     return model

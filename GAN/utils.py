@@ -26,7 +26,6 @@ def load_img(img, size):
     full_img = np.expand_dims(full_img, axis=0)
     return full_img
 
-
 def to_float(x):
     return K.cast(x, "float32")
 

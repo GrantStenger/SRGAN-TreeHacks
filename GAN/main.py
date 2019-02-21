@@ -24,7 +24,7 @@ def makedirs():
 
 def initialize_generator():
     if FLAGS.gen_path is None:
-        generator = create_generator((240, 426, 3), (480, 852, 3), 2)
+        generator = create_generator((240, 426, 3), (480, 852), 2)
     else:
         params = {"root_mean_squared_error": root_mean_squared_error,
                   "tf": tf,
@@ -41,19 +41,20 @@ def initialize_generator():
 def train_generator():
     generator = initialize_generator()
 
-    files = os.listdir(FLAGS.Xtrain_dir)
+    files = os.listdir(FLAGS.X_dir)
 
     for epoch in range(FLAGS.gen_start_epoch, FLAGS.gen_epochs):
         np.random.shuffle(files)
         batches = chunks(files, FLAGS.batch_size)
 
         for batch in batches:
+            print(batch)
             Xtrain = []
             ytrain = []
             for filepath in batch:
-                Xtrain.append(load_img(FLAGS.Xtrain_dir + filepath,
+                Xtrain.append(load_img(FLAGS.X_dir + filepath,
                                        size=(426, 240)))
-                ytrain.append(load_img(FLAGS.ytrain_dir + filepath,
+                ytrain.append(load_img(FLAGS.y_dir + filepath,
                                        size=(852, 480)))
 
             Xtrain = np.squeeze(Xtrain)
@@ -107,7 +108,7 @@ def main():
                   loss_weights=[.95, 0.05],
                   metrics=["accuracy"])
 
-    files = os.listdir(FLAGS.Xtrain_dir)
+    files = os.listdir(FLAGS.X_dir)
     train_gen = False
 
     # Define Training Loop
@@ -119,8 +120,8 @@ def main():
             Xtrain = []
             ytrain = []
             for fp in batch:
-                Xtrain.append(load_img(FLAGS.Xtrain_dir+fp, size=(426, 240)))
-                ytrain.append(load_img(FLAGS.ytrain_dir+fp, size=(852, 480)))
+                Xtrain.append(load_img(FLAGS.X_dir+fp, size=(426, 240)))
+                ytrain.append(load_img(FLAGS.y_dir+fp, size=(852, 480)))
 
             Xtrain = np.squeeze(Xtrain)
             ytrain = np.squeeze(ytrain)
@@ -176,16 +177,12 @@ if __name__ == "__main__":
                         help="path to generator .h5py")
     parser.add_argument("--disc_path", type=str, default=None,
                         help="path to discriminator .h5py")
-    parser.add_argument("--out_dir", type=str, default=None,
+    parser.add_argument("--out_dir", type=str, default="data",
                         help="path to export directory")
-    parser.add_argument("--Xtrain_dir", type=str, default=None,
-                        help="path to Xtrain data directory")
-    parser.add_argument("--Xtest_dir", type=str, default=None,
-                        help="path to Xtest data directory")
-    parser.add_argument("--ytrain_dir", type=str, default=None,
-                        help="path to ytrain data directory")
-    parser.add_argument("--ytest_dir", type=str, default=None,
-                        help="path to ytest data directory")
+    parser.add_argument("--X_dir", type=str, default=None,
+                        help="path to X data directory")
+    parser.add_argument("--y_dir", type=str, default=None,
+                        help="path to y data directory")
     parser.add_argument("--batch_size", type=int, default=16,
                         help="batch size")
     parser.add_argument("--gan_epochs", type=int, default=100,

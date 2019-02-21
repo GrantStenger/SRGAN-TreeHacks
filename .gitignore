@@ -1,6 +1,5 @@
 *.png
 *.npy
-data/
 crystallize-web/video_frames720p/
 crystallize-web/video_frames240p/
 crystallize-web/data240p/

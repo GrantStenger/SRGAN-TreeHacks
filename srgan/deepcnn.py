@@ -24,7 +24,6 @@ from keras.optimizers import Adam
 import argparse
 
 
-
 def preprocess_input(x):
     x /= 255.
     x -= 0.5
@@ -42,14 +41,8 @@ def chunks(l, n):
     for i in range(0, len(l), n):
         yield l[i:i + n]
 
-
 def root_mean_squared_error(y_true, y_pred):
     return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--model_path', type=str, default=None, help='path to weights')
-parser.add_argument('outdir', type=str, help='outdir path')
 
 args = parser.parse_args()
 outdir = args.outdir
@@ -62,8 +55,6 @@ input_shape = (240, 426, 3)
 output_shape = (480, 852, 3)
 
 if model_path is None:
-
-
     model = Sequential()
 
     def to_float(x):
@@ -74,7 +65,6 @@ if model_path is None:
     model.add(UpSampling2D(2))
 
     model.add(Conv2D(3, (4,4), strides=(1,1), padding='SAME', activation='softplus'))
-
 
     # Resize to fit output shape
     model.add( Lambda( lambda image: tf.image.resize_images(
@@ -162,6 +152,12 @@ def train(model):
             cv2.imwrite( save_dir_gan + '/epoch_{0}_img_{1}_true.png'.format(epoch, i), ytrain[i])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--model_path', type=str, default=None, help='path to weights')
+    parser.add_argument('outdir', type=str, help='outdir path')
+
+
 
     train(model)

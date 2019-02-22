@@ -43,7 +43,7 @@ def train_generator():
 
     files = os.listdir(FLAGS.X_dir)
 
-    for epoch in range(FLAGS.gen_start_epoch, FLAGS.gen_epochs):
+    for epoch in range(FLAGS.ginit_start_epoch, FLAGS.ginit_epochs):
         np.random.shuffle(files)
         batches = chunks(files, FLAGS.batch_size)
 
@@ -111,7 +111,7 @@ def main():
     train_gen = False
 
     # Define Training Loop
-    for epoch in range(FLAGS.gan_start_epoch, FLAGS.gan_epochs):
+    for epoch in range(FLAGS.start_epoch, FLAGS.epochs):
         np.random.shuffle(files)
         batches = chunks(files, FLAGS.batch_size)
 
@@ -128,14 +128,14 @@ def main():
             ytrain = np.squeeze(ytrain)
 
             if train_gen:
-                print("Training generator")
+                print("Training generator: epoch {0}".format(epoch))
                 make_trainable(discriminator, False)
 
                 metrics = model.fit(Xtrain, [np.ones([len(Xtrain)]), ytrain])
-                if metrics.history["discriminator_acc"][0] > .8:
+                if metrics.history["generator_acc"][0] > .9:
                     train_gen = False
             else:
-                print("Training discriminator")
+                print("Training discriminator: epoch {0}".format(epoch))
                 make_trainable(discriminator, True)
 
                 # Get generated data from inputs
@@ -147,12 +147,11 @@ def main():
                                                np.ones([len(ytrain)])])
                 disc_input, ground_truth = shuffle(disc_input, ground_truth)
 
-
                 vgg_output = vgg.predict(disc_input, batch_size=1)
 
                 metrics = discriminator.fit(vgg_output, ground_truth)
 
-                if metrics.history["acc"][0] > .8:
+                if metrics.history["acc"][0] > .9:
                     train_gen = True
 
         print("\n \n \n \n COMPLETED EPOCH {0} \n \n \n \n".format(epoch))
@@ -174,7 +173,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     # Adds arguments
-    parser.add_argument("--gen_path", type=str, default=None,
+    parser.add_argument("--gen_path", type=str, default="data/weights/ginit/epoch_9.h5py",
                         help="path to generator .h5py")
     parser.add_argument("--disc_path", type=str, default=None,
                         help="path to discriminator .h5py")
@@ -184,16 +183,16 @@ if __name__ == "__main__":
                         help="path to X data directory")
     parser.add_argument("--y_dir", type=str, default=None,
                         help="path to y data directory")
-    parser.add_argument("--batch_size", type=int, default=32,
+    parser.add_argument("--batch_size", type=int, default=8,
                         help="batch size")
-    parser.add_argument("--gan_epochs", type=int, default=100,
+    parser.add_argument("--epochs", type=int, default=100,
                         help="number of GAN epochs")
-    parser.add_argument("--gan_start_epoch", type=int, default=0,
+    parser.add_argument("--start_epoch", type=int, default=0,
                         help="starting epoch for GAN")
-    parser.add_argument("--gen_epochs", type=int, default=10,
-                        help="number of generator epochs")
-    parser.add_argument("--gen_start_epoch", type=int, default=0,
-                        help="starting epoch for generator")
+    parser.add_argument("--ginit_epochs", type=int, default=10,
+                        help="number of generator init epochs")
+    parser.add_argument("--ginit_start_epoch", type=int, default=0,
+                        help="starting epoch for generator init")
 
     # Parses known arguments
     FLAGS, _ = parser.parse_known_args()

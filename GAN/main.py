@@ -34,7 +34,7 @@ def initialize_generator():
 
     generator.compile(optimizer="adam",
                       loss=root_mean_squared_error,
-                      metrics=["accuracy"])
+                      metrics=["acc"])
 
     return generator
 
@@ -88,7 +88,7 @@ def main():
 
     discriminator.compile(optimizer="adam",
                           loss="binary_crossentropy",
-                          metrics=["accuracy"])
+                          metrics=["acc"])
     make_trainable(discriminator, False)
 
     # Load VGG
@@ -105,7 +105,7 @@ def main():
     model.compile(optimizer="adam",
                   loss=["binary_crossentropy", root_mean_squared_error],
                   loss_weights=[.95, 0.05],
-                  metrics=["accuracy"])
+                  metrics=["acc"])
 
     files = os.listdir(FLAGS.X_dir)
     train_gen = False
@@ -164,9 +164,9 @@ def main():
             cv2.imwrite(FLAGS.out_dir + "/samples/gen/epoch_{0}_img_{1}_pred.png".format(epoch, i), sample)
             cv2.imwrite(FLAGS.out_dir + "/samples/gen/epoch_{0}_img_{1}_true.png".format(epoch, i), ytrain[i])
 
-        generator.save(FLAGS.out_dir + "/gen/epoch_{0}.h5py".format(epoch))
+        generator.save(FLAGS.out_dir + "/weights/gen/epoch_{0}.h5py".format(epoch))
         make_trainable(discriminator, True)
-        discriminator.save(FLAGS.out_dir + "/disc/epoch_{0}.h5py".format(epoch))
+        discriminator.save(FLAGS.out_dir + "/weights/disc/epoch_{0}.h5py".format(epoch))
 
 
 if __name__ == "__main__":

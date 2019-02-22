@@ -4,7 +4,7 @@ from keras.layers import Conv2D, Dense, MaxPooling2D, Flatten
 
 def create_discriminator(input_shape):
     model = Sequential()
-    model.name = "Discriminator"
+    model.name = "discriminator"
 
     # Convolutional Layer 1
     model.add(Conv2D(filters=16, kernel_size=(2, 2), strides=(1, 1),

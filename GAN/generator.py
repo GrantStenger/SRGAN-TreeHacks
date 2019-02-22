@@ -7,6 +7,7 @@ from utils import to_float
 
 def create_generator(input_shape, output_shape, resize_factor):
     model = Sequential()
+    model.name = "generator"
 
     # Float Cast Layer
     model.add(Lambda(to_float, input_shape=input_shape))

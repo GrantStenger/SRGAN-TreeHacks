@@ -48,13 +48,12 @@ def train_generator():
         batches = chunks(files, FLAGS.batch_size)
 
         for batch in batches:
-            print(batch)
             Xtrain = []
             ytrain = []
             for filepath in batch:
-                Xtrain.append(load_img(FLAGS.X_dir + filepath,
+                Xtrain.append(load_img(FLAGS.X_dir + "/" + filepath,
                                        size=(426, 240)))
-                ytrain.append(load_img(FLAGS.y_dir + filepath,
+                ytrain.append(load_img(FLAGS.y_dir + "/" + filepath,
                                        size=(852, 480)))
 
             Xtrain = np.squeeze(Xtrain)
@@ -62,14 +61,14 @@ def train_generator():
 
             generator.fit(Xtrain, ytrain)
 
-        print("Completed epoch {0}".format(epoch))
+        print("\n \n \n \n COMPLETED EPOCH {0} \n \n \n \n".format(epoch))
 
         # quick evaluation on train set
         out = generator.predict(Xtrain)
 
-        for i in enumerate(out):
+        for i, sample in enumerate(out):
             cv2.imwrite(FLAGS.out_dir + "/samples/ginit/epoch_{0}_img_{1}_input.png".format(epoch, i), Xtrain[i])
-            cv2.imwrite(FLAGS.out_dir + "/samples/ginit/epoch_{0}_img_{1}_pred.png".format(epoch, i), out[i])
+            cv2.imwrite(FLAGS.out_dir + "/samples/ginit/epoch_{0}_img_{1}_pred.png".format(epoch, i), sample)
             cv2.imwrite(FLAGS.out_dir + "/samples/ginit/epoch_{0}_img_{1}_true.png".format(epoch, i), ytrain[i])
 
         generator.save(FLAGS.out_dir + "/weights/ginit/epoch_{0}".format(epoch) + ".h5py")
@@ -119,9 +118,11 @@ def main():
         for i, batch in enumerate(batches):
             Xtrain = []
             ytrain = []
-            for fp in batch:
-                Xtrain.append(load_img(FLAGS.X_dir+fp, size=(426, 240)))
-                ytrain.append(load_img(FLAGS.y_dir+fp, size=(852, 480)))
+            for filepath in batch:
+                Xtrain.append(load_img(FLAGS.X_dir + "/" + filepath,
+                                       size=(426, 240)))
+                ytrain.append(load_img(FLAGS.y_dir + "/" + filepath,
+                                       size=(852, 480)))
 
             Xtrain = np.squeeze(Xtrain)
             ytrain = np.squeeze(ytrain)
@@ -154,13 +155,13 @@ def main():
                 if metrics.history["acc"][0] > .8:
                     train_gen = True
 
-        print("Completed epoch {0} \n \n".format(epoch))
+        print("\n \n \n \n COMPLETED EPOCH {0} \n \n \n \n".format(epoch))
         out = generator.predict(Xtrain)
 
         os.makedirs(FLAGS.out_dir + "/samples", exist_ok=True)
-        for i in enumerate(out):
+        for i, sample in enumerate(out):
             cv2.imwrite(FLAGS.out_dir + "/samples/gen/epoch_{0}_img_{1}_input.png".format(epoch, i), Xtrain[i])
-            cv2.imwrite(FLAGS.out_dir + "/samples/gen/epoch_{0}_img_{1}_pred.png".format(epoch, i), out[i])
+            cv2.imwrite(FLAGS.out_dir + "/samples/gen/epoch_{0}_img_{1}_pred.png".format(epoch, i), sample)
             cv2.imwrite(FLAGS.out_dir + "/samples/gen/epoch_{0}_img_{1}_true.png".format(epoch, i), ytrain[i])
 
         generator.save(FLAGS.out_dir + "/gen/epoch_{0}.h5py".format(epoch))
@@ -183,7 +184,7 @@ if __name__ == "__main__":
                         help="path to X data directory")
     parser.add_argument("--y_dir", type=str, default=None,
                         help="path to y data directory")
-    parser.add_argument("--batch_size", type=int, default=16,
+    parser.add_argument("--batch_size", type=int, default=32,
                         help="batch size")
     parser.add_argument("--gan_epochs", type=int, default=100,
                         help="number of GAN epochs")

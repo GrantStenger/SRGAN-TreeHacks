@@ -24,11 +24,27 @@ TreeHacks 2019: Best computer vision prize and IBM’s #1 favorite health hack. 
   - Upscale a whole video
 - Sunday, Feb 17, 8:00am
   - Write quick frontend
-  - Optimize video data upscaling 
+  - Optimize video data upscaling
 - Sunday, Feb 17, 10:00am
   - Finish data pipeline so user can upscale any YouTube video of their choosing in realtime.
   - Hacking stops!
 
+### Post-TreeHacks To Do's
+- Clean up GitHub
+- Clean up devpost
+- Create experimental pipeline
+- Write arXiv article
+- Figure out what graphs / sample videos to use
+- Market research (Disney/ESPN, GoPro, USC ITS, Axon, IBM, Waymo, Uber ATG, Defense contracts)
+  - Are up upgrading image quality?
+  - Are we upgrading video quality?
+  - Are we upgrading live video streams?
+- Build out attention model
+- Build out time-series, 3D convolution over last 10 frames
+- Make it generalizable - put in input resolution and output resolution, library of models
+- Page write up on what we created
+- People from these companies were excited, we won this prize, want to figure out if this would be something that would be interesting to people, I'd love to get your advice.
+d
 ### Resources
 
 ##### Papers

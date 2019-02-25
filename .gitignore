@@ -1,11 +1,11 @@
 *.png
 *.npy
-data/
+*.h5py
 crystallize-web/video_frames720p/
 crystallize-web/video_frames240p/
 crystallize-web/data240p/
 crystallize-web/__pycache__/
 GAN/__pycache__/
 __pycache__/
-crystallize-web/epoch_2.h5py
 crystallize-web/vid_utils.py
+.DS_Store

@@ -78,3 +78,136 @@ def create_3colorsto1color_cnn(input_shape, output_size, resize_factor):
     model.name = "generator"
 
     return model
+
+
+
+
+def create_3colorsto1color_2layer_cnn(input_shape, output_size, resize_factor):
+    def cnn_transform(inval, n_filters=8, kernel_size=(2,2)):
+        transformed = Conv2D(n_filters, kernel_size=kernel_size, padding="SAME", activation='softplus')(inval)
+        summed = Conv2D(1, kernel_size=(1,1), padding="SAME", activation="softplus")(transformed)
+        return summed
+    
+    img = Input(input_shape)
+
+    # Float Cast Layer
+    float_img = Lambda(to_float, input_shape=input_shape)(img)
+    upsample = UpSampling2D(resize_factor)(float_img)
+
+    GBR = []
+    for i in range(3):  
+        out = cnn_transform(upsample, n_filters=8)
+        GBR.append(out)
+
+    out_img = Concatenate()(GBR)
+        
+    # Resize Layer
+    resized_img = Lambda(lambda image: tf.image.resize_images(
+        image, output_size,
+        method=tf.image.ResizeMethod.BICUBIC,
+        align_corners=True
+        ))(out_img)
+
+    model = Model(inputs=[img], outputs=[resized_img])
+    model.name = "generator"
+
+    return model
+
+
+def create_3colorsto1color_2layer_MultiFilter_cnn(input_shape, output_size, resize_factor):
+    
+    
+    def cnn_transform(inval, n_filters=4, kernel_sizes=[ (2,2), (3,3), (5,5), (7,7)]):
+        outvals = []
+        for size in sizes:
+            out = Conv2D(n_filters, kernel_size=size, padding="SAME", activation='softplus')(inval)
+            outvals.append(out)
+            
+        transformed = Concatenate()(outvals)
+        summed = Conv2D(1, kernel_size=(1,1), padding="SAME", activation="softplus")(transformed)
+        return summed
+    
+    img = Input(input_shape)
+    float_img = Lambda(to_float, input_shape=input_shape)(img)
+    upsample = UpSampling2D(resize_factor)(float_img)
+
+    GBR = []
+    for i in range(3):  
+        out = cnn_transform(upsample, n_filters=8)
+        GBR.append(out)
+
+    out_img = Concatenate()(GBR)
+    
+    # Resize Layer
+    resized_img = Lambda(lambda image: tf.image.resize_images(
+        image, output_size,
+        method=tf.image.ResizeMethod.BICUBIC,
+        align_corners=True
+        ))(out_img)
+
+    model = Model(inputs=[img], outputs=[resized_img])
+    model.name = "generator"
+
+    return model
+
+
+def create_2layer_baseline_cnn(input_shape, output_size, resize_factor):
+    
+    img = Input(input_shape)
+
+    # Float Cast Layer
+    float_img = Lambda(to_float, input_shape=input_shape)(img)
+    upsample = UpSampling2D(resize_factor)(float_img)
+    
+    conv_out = Conv2D(32, kernel_size=(3, 3), activation='softplus')(upsample)
+    out_img = Conv2D(3, kernel_size=(1,1), activation='softplus')(conv_out)
+    
+    # Resize Layer
+    resized_img = Lambda(lambda image: tf.image.resize_images(
+        image, output_size,
+        method=tf.image.ResizeMethod.BICUBIC,
+        align_corners=True
+        ))(out_img)
+
+    model = Model(inputs=[img], outputs=[resized_img])
+    model.name = "generator"
+
+    return model
+
+
+
+def create_2layer_multiplFilters_cnn(input_shape, output_size, resize_factor):
+    
+    sizes = ( (2,2), (3,3), (5,5), (7,7) )
+    n_filters = 4
+    
+    img = Input(input_shape)
+
+    # Float Cast Layer
+    float_img = Lambda(to_float, input_shape=input_shape)(img)
+    upsample = UpSampling2D(resize_factor)(float_img)
+    
+    convs_out = []
+    for size in sizes:
+        conv_out = Conv2D(n_filters, kernel_size=size, activation='softplus', padding="SAME")(upsample)
+        convs_out.append(conv_out)
+        
+    combined = Concatenate()(convs_out)
+    out_img = Conv2D(3, kernel_size=(1,1), padding="SAME", activation='softplus')(combined)
+    
+    # Resize Layer
+    resized_img = Lambda(lambda image: tf.image.resize_images(
+        image, output_size,
+        method=tf.image.ResizeMethod.BICUBIC,
+        align_corners=True
+        ))(out_img)
+
+    model = Model(inputs=[img], outputs=[resized_img])
+    model.name = "generator"
+
+    return model
+
+
+
+
+

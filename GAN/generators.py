@@ -47,7 +47,7 @@ def create_baseline_cnn(input_shape, output_size, resize_factor):
     return model
 
 def create_3colorsto1color_cnn(input_shape, output_size, resize_factor):
-    def cnn_transform(inval, n_filters, kernel_size=(2,2)):
+    def cnn_transform(inval, n_filters, kernel_size=(3, 3)):
         transformed = Conv2D(n_filters, kernel_size=kernel_size, padding="SAME", activation="softplus")(inval)
         summed = Lambda(lambda x: K.expand_dims( K.sum(x, axis=-1), ) ) (transformed)
         

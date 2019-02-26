@@ -123,8 +123,9 @@ def train_generator():
 
         # Saves samples
         for i, sample in enumerate(out):
+            resized_train = cv2.resize(x_train[i], (0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
             cv2.imwrite(base_filepath + "_img_{0}_input.png".format(i),
-                        x_train[i])
+                        resized_train)
             cv2.imwrite(base_filepath + "_img_{0}_pred.png".format(i),
                         sample)
             cv2.imwrite(base_filepath + "_img_{0}_true.png".format(i),
@@ -249,8 +250,9 @@ def main():
 
         # Save samples
         for i, sample in enumerate(out):
+            resized_train = cv2.resize(x_train[i], (0, 0), fx=2, fy=2, interpolation=cv2.INTER_CUBIC)
             cv2.imwrite(base_filepath + "_img_{0}_input.png".format(i),
-                        x_train[i])
+                        resized_train)
             cv2.imwrite(base_filepath + "_img_{0}_pred.png".format(i),
                         sample)
             cv2.imwrite(base_filepath + "_img_{0}_true.png".format(i),
@@ -268,7 +270,7 @@ if __name__ == "__main__":
     PARSER = argparse.ArgumentParser()
 
     # Adds arguments
-    PARSER.add_argument("--gen_path", type=str, default="data/weights/ginit/epoch_9.h5py",
+    PARSER.add_argument("--gen_path", type=str, default=None,
                         help="path to generator .h5py")
     PARSER.add_argument("--disc_path", type=str, default=None,
                         help="path to discriminator .h5py")
@@ -284,7 +286,7 @@ if __name__ == "__main__":
                         help="number of GAN epochs")
     PARSER.add_argument("--start_epoch", type=int, default=0,
                         help="starting epoch for GAN")
-    PARSER.add_argument("--ginit_epochs", type=int, default=10,
+    PARSER.add_argument("--ginit_epochs", type=int, default=5,
                         help="number of generator init epochs")
     PARSER.add_argument("--ginit_start_epoch", type=int, default=0,
                         help="starting epoch for generator init")

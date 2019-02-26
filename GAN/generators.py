@@ -119,7 +119,7 @@ def create_3colorsto1color_2layer_MultiFilter_cnn(input_shape, output_size, resi
     
     def cnn_transform(inval, n_filters=4, kernel_sizes=[ (2,2), (3,3), (5,5), (7,7)]):
         outvals = []
-        for size in sizes:
+        for size in kernel_sizes:
             out = Conv2D(n_filters, kernel_size=size, padding="SAME", activation='softplus')(inval)
             outvals.append(out)
             

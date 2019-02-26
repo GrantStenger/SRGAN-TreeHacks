@@ -10,7 +10,7 @@ from keras.models import load_model, Model
 from keras.layers import Input
 from sklearn.utils import shuffle
 from discriminator import create_discriminator
-from generators import create_baseline_cnn, create_3colorsto1color_cnn
+from generators import create_baseline_cnn, create_3colorsto1color_cnn, create_3colorsto1color_2layer_cnn, create_3colorsto1color_2layer_MultiFilter_cnn
 
 from utils import make_trainable, root_mean_squared_error, chunks, load_img
 
@@ -38,7 +38,7 @@ def initialize_generator():
 
     # Creates a new model if no saved model is specified
     if FLAGS.gen_path is None:
-        generator = create_3colorsto1color_cnn(input_shape=(240, 426, 3),
+        generator = create_3colorsto1color_2layer_MultiFilter_cnn(input_shape=(240, 426, 3),
                                      output_size=(480, 852),
                                      resize_factor=2)
     # Otherwise loads the specified model
@@ -179,7 +179,7 @@ def main():
     model = Model(inputs=input_layer, outputs=[out_disc, out_gen])
     model.compile(optimizer="adam",
                   loss=["binary_crossentropy", root_mean_squared_error],
-                  loss_weights=[.90, 0.1],
+                  loss_weights=[0.9, 0.1],
                   metrics=["acc"])
 
     # Gets filepaths of training set

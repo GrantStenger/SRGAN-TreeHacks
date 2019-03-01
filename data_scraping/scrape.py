@@ -57,10 +57,9 @@ def get_frames(cap, pos):
 
 def get_yt(link):
 
-    print(link)
     try:
         #object creation using YouTube which was imported in the beginning
-        yt = YouTube(link, )
+        yt = YouTube(link)
     except:
         print("YT Error")
         return None
@@ -84,118 +83,87 @@ def run_func_with_timeout(func, args, timeout=5):
     return not res
 
 
+def download_and_frame(yt, id_val, target_width, target_height, 
+                        timeout=10, N_FRAMES_ITER=15):
+
+    # Download video for 240 px
+    name = 'temp'
+    outfile = 'data/'+name+'.mp4'
+    successful = True 
+
+    success = run_func_with_timeout(download_video, (yt, id_val, name), timeout=timeout)
+    if not success:
+        return []
+
+    # Get 5 frames for OpenCV
+    cap = cv2.VideoCapture(outfile)
+    totalFrames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
+
+    width = cap.get(3)   # float
+    height = cap.get(4) # float
+
+    # check if within 
+    if abs(height - target_height) > 2 or abs(width - target_width) > 2:
+        print(width, height, "no bueno")
+        return successful, [] 
+    
+    # Get positions
+    pos = (np.random.rand(N_FRAMES_ITER)*totalFrames-3).astype(np.int) + 1
+    pos.sort()
+
+    imgs, success = get_frames(cap, pos)
+    del cap
+
+    if not success:
+        return []
+    
+    return imgs 
+
+           
+
 def main():
     root = 'https://www.youtube.com/watch?v='
 
     urls = pd.read_csv('data/links.csv', header=None)[0].apply(lambda x: x.replace("'", '') )
     urls = urls.tolist()[start_pos:]
-
-
-    XDIR = outdir+'144px/'
-    YDIR = outdir+'240px/'
-    Y2DIR = outdir+'360px/'
-    Y3DIR = outdir+'480px/'
-    Y4DIR = outdir+'720px/'
-
+    
+    YDIR = outdir+'/240px/'
+    Y3DIR = outdir+'/480px/'
+   
     # Make sure dirs exist
     os.makedirs(outdir, exist_ok=True)
     os.makedirs('data/', exist_ok=True)
-    os.makedirs(XDIR, exist_ok=True)
     os.makedirs(YDIR, exist_ok=True)
-    os.makedirs(Y2DIR, exist_ok=True)
     os.makedirs(Y3DIR, exist_ok=True)
 
-    img_count = len(os.listdir(XDIR))
-    N_FRAMES_ITER = 11
+    img_count = len(os.listdir(YDIR))
 
     for nvids, url in enumerate(urls):
 
         try:
-
             link = root + url
-
             yt = get_yt(link)
 
-            if yt is None:
-                continue
+            imgs240 = download_and_frame(yt=yt, id_val='240p', target_height=240, 
+                                            target_width=426)
+            print(len(imgs240))
+            
+            if len(imgs240) == 0:
+                print("COINTOINE")
+                continue 
 
-            # Download video for 144 px
-            name = 'temp'
-            outfile = 'data/'+name+'.mp4'
+            imgs480 = download_and_frame(yt=yt, id_val='480p', target_height=480, 
+                                            target_width=854)
 
-            success = run_func_with_timeout(download_video, (yt, '144p', name), timeout=timeout)
-            if not success:
-                continue
-
-            # Get 5 frames for OpenCV
-            cap = cv2.VideoCapture(outfile)
-            totalFrames = cap.get(cv2.CAP_PROP_FRAME_COUNT)
-
-            # Get positions
-            pos = (np.random.rand(N_FRAMES_ITER)*totalFrames-3).astype(np.int) + 1
-            pos.sort()
-
-            imgs144, success = get_frames(cap, pos)
-            del cap
-            if not success:
-                continue
-
-            # Download 240p video
-            success = run_func_with_timeout(download_video, (yt, '240p', name), timeout=timeout )
-            if not success:
-                continue
-
-            # Ditto for 240p
-            cap = cv2.VideoCapture(outfile)
-            imgs240, sucess = get_frames(cap, pos)
-            del cap
-            if not success:
-                continue
-
-            # Download 360p video
-            success = run_func_with_timeout(download_video, (yt, '360p', name), timeout=timeout )
-            if not success:
-                continue
-
-            # Ditto for 360p
-            cap = cv2.VideoCapture(outfile)
-            imgs360, sucess = get_frames(cap, pos)
-            del cap
-            if not success:
-                continue
-
-            # Download 480p video
-            success = run_func_with_timeout(download_video, (yt, '480p', name), timeout=timeout )
-            if not success:
-                continue
-
-            # Ditto for 480p
-            cap = cv2.VideoCapture(outfile)
-            imgs480, sucess = get_frames(cap, pos)
-            del cap
-            if not success:
-                continue
-
-            # Download 720p video
-            success = run_func_with_timeout(download_video, (yt, '720p', name), timeout=timeout )
-            if not success:
-                continue
-
-            # Ditto for 720p
-            cap = cv2.VideoCapture(outfile)
-            imgs720, sucess = get_frames(cap, pos)
-            del cap
-            if not success:
+            print(len(imgs480))
+            if len(imgs480) == 0:
+                print("COINTINE")
                 continue
 
             # Save images
-            for i in range(len(imgs144)):
-                cv2.imwrite(XDIR+str(img_count)+'.png', imgs144[i])
+            for i in range(len(imgs240)):
                 cv2.imwrite(YDIR+str(img_count)+'.png', imgs240[i])
-                cv2.imwrite(Y2DIR+str(img_count)+'.png', imgs360[i])
                 cv2.imwrite(Y3DIR+str(img_count)+'.png', imgs480[i])
-                cv2.imwrite(Y4DIR+str(img_count)+'.png', imgs720[i])
-
                 img_count+=1
 
             print("SUCCESS: ", nvids)

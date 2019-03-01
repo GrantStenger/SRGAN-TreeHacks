@@ -84,7 +84,7 @@ def run_func_with_timeout(func, args, timeout=5):
 
 
 def download_and_frame(yt, id_val, target_width, target_height, 
-                        timeout=10, N_FRAMES_ITER=15):
+                        timeout=10, N_FRAMES_ITER=15, pos=None):
 
     # Download video for 240 px
     name = 'temp'
@@ -108,8 +108,9 @@ def download_and_frame(yt, id_val, target_width, target_height,
         return successful, [] 
     
     # Get positions
-    pos = (np.random.rand(N_FRAMES_ITER)*totalFrames-3).astype(np.int) + 1
-    pos.sort()
+    if pos is None:
+        pos = (np.random.rand(N_FRAMES_ITER)*totalFrames-3).astype(np.int) + 1
+        pos.sort()
 
     imgs, success = get_frames(cap, pos)
     del cap
@@ -117,11 +118,12 @@ def download_and_frame(yt, id_val, target_width, target_height,
     if not success:
         return []
     
-    return imgs 
+    return imgs, pos
 
            
 
 def main():
+
     root = 'https://www.youtube.com/watch?v='
 
     urls = pd.read_csv('data/links.csv', header=None)[0].apply(lambda x: x.replace("'", '') )
@@ -144,16 +146,15 @@ def main():
             link = root + url
             yt = get_yt(link)
 
-            imgs240 = download_and_frame(yt=yt, id_val='240p', target_height=240, 
+            imgs240, pos = download_and_frame(yt=yt, id_val='240p', target_height=240, 
                                             target_width=426)
-            print(len(imgs240))
             
             if len(imgs240) == 0:
                 print("COINTOINE")
                 continue 
 
-            imgs480 = download_and_frame(yt=yt, id_val='480p', target_height=480, 
-                                            target_width=854)
+            imgs480, pos = download_and_frame(yt=yt, id_val='480p', target_height=480, 
+                                            target_width=854, pos=pos)
 
             print(len(imgs480))
             if len(imgs480) == 0:

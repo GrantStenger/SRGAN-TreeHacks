@@ -10,7 +10,7 @@ from keras.models import load_model, Model
 from keras.layers import Input
 from sklearn.utils import shuffle
 from discriminator import create_discriminator
-from generators import create_baseline_cnn, create_3colorsto1color_cnn, create_3colorsto1color_2layer_cnn, create_3colorsto1color_2layer_MultiFilter_cnn
+from generators import create_baseline_cnn, create_3colorsto1color_cnn, create_3colorsto1color_2layer_cnn, create_3colorsto1color_2layer_MultiFilter_cnn, create_2layer_baseline_cnn
 
 from utils import make_trainable, root_mean_squared_error, chunks, load_img
 
@@ -38,14 +38,14 @@ def initialize_generator():
 
     # Creates a new model if no saved model is specified
     if FLAGS.gen_path is None:
-        generator = create_3colorsto1color_2layer_MultiFilter_cnn(input_shape=(240, 426, 3),
-                                     output_size=(480, 852),
-                                     resize_factor=2)
+        generator = create_baseline_cnn(input_shape=(240, 426, 3),
+                                        output_size=(480, 854),
+                                        resize_factor=2)
     # Otherwise loads the specified model
     else:
         params = {"root_mean_squared_error": root_mean_squared_error,
                   "tf": tf,
-                  "output_shape": (480, 852)}
+                  "output_shape": (480, 854)}
 
         generator = load_model(FLAGS.gen_path, custom_objects=params)
 
@@ -63,6 +63,7 @@ def create_batch_tensors(batch):
             batch: A list of filepaths
 
         Returns:
+            success: True if successful.
             x_train: The x_train tensor.
             y_train: The y_train tensor.
     """
@@ -72,16 +73,22 @@ def create_batch_tensors(batch):
 
     # Adds image filepaths to batch
     for filepath in batch:
-        x_train.append(load_img(FLAGS.x_dir + "/" + filepath,
-                                size=(426, 240)))
-        y_train.append(load_img(FLAGS.y_dir + "/" + filepath,
-                                size=(852, 480)))
+        x_success, x_image = load_img(FLAGS.x_dir + "/" + filepath,
+                                      size=(426, 240))
+        y_success, y_image = load_img(FLAGS.y_dir + "/" + filepath,
+                                      size=(854, 480))
+
+        if not x_success or not y_success:
+            return False, None, None
+
+        x_train.append(x_image)
+        y_train.append(y_image)
 
     # Removes dimensions of 1 from training set
     x_train = np.squeeze(x_train)
     y_train = np.squeeze(y_train)
 
-    return x_train, y_train
+    return True, x_train, y_train
 
 def train_generator():
     """ Trains the generator by itself to achieve a baseline.
@@ -110,7 +117,9 @@ def train_generator():
         # Trains a batch
         for batch in batches:
             # Creates batch tensors
-            x_train, y_train = create_batch_tensors(batch)
+            success, x_train, y_train = create_batch_tensors(batch)
+            if not success:
+                continue
 
             # Trains the generator on a batch
             generator.fit(x_train, y_train)

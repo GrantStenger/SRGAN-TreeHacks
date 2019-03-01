@@ -33,11 +33,18 @@ def load_img(img, size):
             size: The desired size of the image.
 
         Returns:
+            success: True if the function succeeded.
             full_img: The CV2 loaded image.
     """
+    
+    success = True
 
     # Load image from filepath
     full_img = cv2.imread(img)
+
+    # Checks for image error
+    if np.sum(full_img.shape) < 100:
+        success = False
 
     # Resize image
     full_img = cv2.resize(full_img, size)
@@ -45,7 +52,7 @@ def load_img(img, size):
     # Add a batch dimension to the shape
     full_img = np.expand_dims(full_img, axis=0)
 
-    return full_img
+    return success, full_img
 
 def to_float(tensor):
     """ Casts a tensor to float32.
